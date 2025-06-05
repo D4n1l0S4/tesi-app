@@ -1,0 +1,79 @@
+<div class="auth-wrapper">
+  <div class="auth-content">
+    <div class="card">
+      <div class="row align-items-center text-center">
+        <div class="col-md-12">
+          <div class="card-body">
+            <img src="assets/images/logoFinale2.png" alt="logo" class="img-fluid mb-4" />
+            <h4 class="mb-3 f-w-400">SignIn</h4>
+            
+            <form (ngSubmit)="onSubmit()">
+              <!-- Alert per errori -->
+              <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+              
+              <!-- Username -->
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1"><i class="feather icon-user"></i></span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Username" 
+                  aria-label="Username" 
+                  aria-describedby="basic-addon1"
+                  name="username"
+                  [(ngModel)]="loginRequest.username"
+                  required />
+              </div>
+              
+              <!-- Password -->
+              <div class="input-group mb-4">
+                <span class="input-group-text" id="basic-addon3"><i class="feather icon-lock"></i></span>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  placeholder="Password" 
+                  aria-label="Password" 
+                  aria-describedby="basic-addon3"
+                  name="password"
+                  [(ngModel)]="loginRequest.password"
+                  required />
+              </div>
+              
+              <!-- Save credentials -->
+              <div class="form-group text-start mt-2">
+                <div class="checkbox checkbox-primary d-inline">
+                  <input 
+                    type="checkbox" 
+                    name="saveCredentials" 
+                    id="checkbox-fill-a1"
+                    [(ngModel)]="saveCredentials" />
+                  <label for="checkbox-fill-a1" class="cr">Save credentials</label>
+                </div>
+              </div>
+              
+              <!-- Submit button -->
+              <div class="d-grid">
+                <button 
+                  type="submit" 
+                  class="btn btn-block btn-primary mb-4"
+                  [disabled]="loading">
+                  <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                  SignIn
+                </button>
+              </div>
+            </form>
+            
+            <p class="mb-2 text-muted">
+              Forgot password?
+              <a href="javascriprt:" class="f-w-400">Reset</a>
+            </p>
+            <p class="mb-0 text-muted">
+              Don't have an account?
+              <a [routerLink]="['/auth/signup']" class="f-w-400">Signup</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,560 @@
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <div class="page-header-title">
+          <h2 class="mb-0">
+            <i [class]="getPageIcon()" class="me-2"></i>
+            {{ getPageTitle() }}<span *ngIf="patient"> - {{ patient.firstName }} {{ patient.lastName }}</span>
+          </h2>
+        </div>
+      </div>
+      <div class="col-md-4 text-end">
+        <button 
+          class="btn"
+          [class]="hasUnsavedChanges() ? 'btn-warning' : 'btn-outline-secondary'"
+          (click)="goBackToPatients()"
+          [title]="hasUnsavedChanges() ? 'ATTENZIONE: Hai modifiche non salvate!' : 'Torna alla lista pazienti'"
+        >
+          <i class="feather icon-arrow-left me-1"></i>
+          <span *ngIf="hasUnsavedChanges()">⚠️ </span>Torna ai Pazienti
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="feather icon-sitemap me-2"></i>
+          Editor Pedigree
+        </h5>
+        
+        <!-- Action Buttons -->
+        <div class="btn-group" role="group">
+          <button 
+            class="btn btn-success"
+            (click)="savePedigree()"
+            [disabled]="saving || loading"
+            title="Salva pedigree"
+          >
+            <i *ngIf="saving" class="feather icon-loader me-1 fa-spin"></i>
+            <i *ngIf="!saving" class="feather icon-save me-1"></i>
+            {{ saving ? 'Salvando...' : 'Salva' }}
+          </button>
+          
+          <button 
+            class="btn btn-warning"
+            (click)="resetPedigree()"
+            [disabled]="loading || saving"
+            title="Reset pedigree"
+          >
+            <i class="feather icon-refresh-cw me-1"></i>
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- I/O Toolbar Section -->
+      <div *ngIf="!loading && !error" class="card-header bg-light border-top">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h6 class="mb-0 text-muted">
+              <i class="feather icon-download-cloud me-2"></i>
+              Import / Export Pedigree
+            </h6>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-end gap-2">
+              
+              <!-- Export Group -->
+              <div class="btn-group" role="group" aria-label="Export Options">
+                <button 
+                  type="button" 
+                  class="btn btn-outline-primary btn-sm"
+                  (click)="exportToPNG()"
+                  [disabled]="!pedigreeInitialized"
+                  title="Esporta come immagine PNG ad alta risoluzione">
+                  <i class="feather icon-image me-1"></i>PNG
+                </button>
+                
+                <button 
+                  type="button" 
+                  class="btn btn-outline-primary btn-sm"
+                  (click)="exportToSVG()"
+                  [disabled]="!pedigreeInitialized"
+                  title="Esporta come grafico vettoriale SVG">
+                  <i class="feather icon-file-text me-1"></i>SVG
+                </button>
+                
+                <button 
+                  type="button" 
+                  class="btn btn-outline-info btn-sm"
+                  (click)="exportToJSON()"
+                  [disabled]="!pedigreeInitialized"
+                  title="Esporta dati in formato JSON">
+                  <i class="feather icon-download me-1"></i>JSON
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn btn-outline-success btn-sm"
+                  (click)="exportToBoadicea()"
+                  [disabled]="!pedigreeInitialized"
+                  title="Esporta in formato BOADICEA v4 (standard medico)">
+                  <i class="feather icon-download me-1"></i>BOADICEA
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn btn-outline-warning btn-sm"
+                  (click)="exportToCanRisk()"
+                  [disabled]="!pedigreeInitialized"
+                  title="Esporta in formato CanRisk v4.0">
+                  <i class="feather icon-download me-1"></i>CanRisk
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn btn-outline-danger btn-sm"
+                  (click)="printPedigree()"
+                  [disabled]="!pedigreeInitialized"
+                  title="Stampa o salva come PDF">
+                  <i class="feather icon-printer me-1"></i>Stampa
+                </button>
+              </div>
+
+              <!-- Import Group -->
+              <div class="btn-group" role="group" aria-label="Import Options">
+                <input 
+                  #fileInput 
+                  type="file" 
+                  hidden 
+                  (change)="importFromFile($event)" 
+                  accept=".json,.txt,.ped,.bwa"
+                  multiple="false">
+                
+                <button 
+                  type="button" 
+                  class="btn btn-outline-warning btn-sm"
+                  (click)="fileInput.click()"
+                  [disabled]="loading || saving"
+                  title="Importa pedigree da file (JSON, BOADICEA, CanRisk)">
+                  <i class="feather icon-upload me-1"></i>Importa File
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Import/Export Status Messages -->
+        <div *ngIf="ioMessage" class="mt-2">
+          <div class="alert" 
+               [class]="ioMessageType === 'success' ? 'alert-success' : (ioMessageType === 'error' ? 'alert-danger' : 'alert-info')"
+               role="alert">
+            <i class="feather" 
+               [class]="ioMessageType === 'success' ? 'icon-check-circle' : (ioMessageType === 'error' ? 'icon-alert-triangle' : 'icon-info')"
+               class="me-2"></i>
+            {{ ioMessage }}
+            <button type="button" class="btn-close float-end" (click)="clearIOMessage()" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        
+        <!-- Unsaved Changes Warning -->
+        <div *ngIf="!loading && !error && hasUnsavedChanges()" class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+            <i class="feather icon-alert-triangle me-2"></i>
+            <span><strong>Modifiche non salvate!</strong> Hai apportato delle modifiche che non sono ancora state salvate nel database.</span>
+        </div>
+
+        <!-- Custom Confirmation Dialog -->
+        <div *ngIf="showUnsavedDialog" 
+             class="modal fade show d-block" 
+             tabindex="-1" 
+             style="background-color: rgba(0,0,0,0.5); z-index: 9999; position: fixed; top: 0; left: 0; width: 100%; height: 100%;"
+             (click)="$event.target === $event.currentTarget && stayHere()">
+          <div class="modal-dialog modal-dialog-centered modal-lg" style="z-index: 10000;">
+            <div class="modal-content border-0 shadow-lg" style="position: relative; z-index: 10001;">
+              <div class="modal-header border-0 bg-warning bg-opacity-10 border-bottom border-warning">
+                <h5 class="modal-title text-dark fw-normal">
+                  <i class="feather icon-alert-triangle me-3 text-dark"></i>
+                  Hai delle modifiche non salvate
+                </h5>
+              </div>
+              <div class="modal-body p-4">
+                
+                <!-- Current situation -->
+                <div class="mb-4">
+                  <h6 class="text-dark mb-3 fw-semibold">
+                    <i class="feather icon-info me-2 text-primary"></i>
+                    Situazione attuale:
+                  </h6>
+                  
+                  <div class="border rounded p-3 bg-light bg-opacity-50">
+                    <div class="d-flex align-items-start mb-2">
+                      <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-3 mt-1" style="width: 16px; height: 16px;">
+                        <i class="feather icon-check text-white" style="font-size: 10px;"></i>
+                      </div>
+                      <span class="text-muted">Le tue modifiche sono <strong>salvate provvisoriamente</strong></span>
+                    </div>
+                    <div class="d-flex align-items-start mb-2">
+                      <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center me-3 mt-1" style="width: 16px; height: 16px;">
+                        <i class="feather icon-x text-white" style="font-size: 10px;"></i>
+                      </div>
+                      <span class="text-muted">Le modifiche <strong>NON sono nell'archivio permanente</strong></span>
+                    </div>
+                    <div class="d-flex align-items-start">
+                      <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center me-3 mt-1" style="width: 16px; height: 16px;">
+                        <i class="feather icon-alert-triangle text-white" style="font-size: 10px;"></i>
+                      </div>
+                      <span class="text-muted">Se esci ora, le modifiche potrebbero andare perse</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Question -->
+                <div class="mb-4">
+                  <p class="text-muted mb-0">Come vuoi procedere?</p>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="d-grid gap-3" style="pointer-events: auto;">
+                  
+                  <!-- Primary Action: Save and Exit/Navigate -->
+                  <button type="button" 
+                          class="btn btn-success d-flex align-items-center justify-content-center" 
+                          (click)="saveAndExit()"
+                          [disabled]="saving"
+                          style="pointer-events: auto; z-index: 10002; position: relative;">
+                    <i class="feather icon-save me-3"></i>
+                    <div class="text-start">
+                      <div class="fw-semibold" *ngIf="isNavigatingToPatients">💾 Salva Definitivamente e Torna alla Lista</div>
+                      <div class="fw-semibold" *ngIf="!isNavigatingToPatients">💾 Salva Definitivamente</div>
+                      <small class="text-light opacity-75">✅ Raccomandato - Le modifiche saranno al sicuro</small>
+                    </div>
+                  </button>
+                  
+                  <!-- Secondary Action: Exit without saving (only for patients navigation) -->
+                  <button type="button" 
+                          *ngIf="isNavigatingToPatients"
+                          class="btn btn-outline-secondary d-flex align-items-center justify-content-center" 
+                          (click)="exitWithoutSaving()"
+                          style="pointer-events: auto; z-index: 10002; position: relative;">
+                    <i class="feather icon-log-out me-3"></i>
+                    <div class="text-start">
+                      <div class="fw-semibold">🚪 Torna alla Lista (senza salvare)</div>
+                      <small class="text-muted">⚠️ Le modifiche potrebbero andare perse</small>
+                    </div>
+                  </button>
+                  
+                  <!-- Tertiary Action: Stay -->
+                  <button type="button" 
+                          class="btn btn-outline-secondary" 
+                          (click)="stayHere()"
+                          style="pointer-events: auto; z-index: 10002; position: relative;">
+                    <i class="feather icon-x me-2"></i>
+                    Continua a modificare
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Reset Confirmation Dialog -->
+        <div *ngIf="showResetDialog" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.4);">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+              <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title text-dark fw-normal">
+                  <i class="feather icon-refresh-cw me-3 text-muted"></i>
+                  Reset Pedigree
+                </h5>
+              </div>
+              <div class="modal-body p-4">
+                
+                <!-- Main explanation -->
+                <div class="mb-4">
+                  <p class="text-muted mb-3 fs-6">
+                    Stai per resettare completamente il pedigree. Questa operazione riporterà l'editor allo stato iniziale.
+                  </p>
+                </div>
+
+                <!-- What will be removed -->
+                <div class="mb-4">
+                  <h6 class="text-dark mb-3 fw-semibold">
+                    <i class="feather icon-minus-circle me-2 text-warning"></i>
+                    Elementi che verranno rimossi:
+                  </h6>
+                  
+                  <div class="ps-4">
+                    <div class="d-flex align-items-center mb-2">
+                      <div class="bg-light rounded-circle p-1 me-3" style="width: 8px; height: 8px;"></div>
+                      <span class="text-muted">Tutti i familiari aggiunti</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <div class="bg-light rounded-circle p-1 me-3" style="width: 8px; height: 8px;"></div>
+                      <span class="text-muted">Relazioni e collegamenti familiari</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <div class="bg-light rounded-circle p-1 me-3" style="width: 8px; height: 8px;"></div>
+                      <span class="text-muted">Informazioni mediche inserite</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <div class="bg-light rounded-circle p-1 me-3" style="width: 8px; height: 8px;"></div>
+                      <span class="text-muted">Tutte le modifiche non salvate</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- What will remain -->
+                <div class="mb-4">
+                  <h6 class="text-dark mb-3 fw-semibold">
+                    <i class="feather icon-user me-2 text-primary"></i>
+                    Rimarrà presente:
+                  </h6>
+                  
+                  <div class="border rounded p-3 bg-light bg-opacity-50">
+                    <div class="d-flex align-items-center">
+                      <div class="border border-2 border-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                        <i class="feather icon-user text-primary" style="font-size: 14px;"></i>
+                      </div>
+                      <div>
+                        <div class="fw-semibold text-dark" *ngIf="patient">{{ patient.firstName }} {{ patient.lastName }}</div>
+                        <small class="text-muted">Paziente principale (proband)</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Warning note -->
+                <div class="border border-warning rounded p-3 mb-4">
+                  <div class="d-flex">
+                    <i class="feather icon-alert-triangle text-warning me-3 mt-1"></i>
+                    <div>
+                      <div class="fw-semibold text-dark mb-1">Operazione irreversibile</div>
+                      <small class="text-muted">Una volta confermato, non sarà possibile recuperare i dati eliminati.</small>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="d-flex gap-3 justify-content-end">
+                  <button type="button" 
+                          class="btn btn-outline-secondary px-4" 
+                          (click)="cancelReset()">
+                    <i class="feather icon-x me-2"></i>
+                    Annulla
+                  </button>
+                  
+                  <button type="button" 
+                          class="btn btn-primary px-4" 
+                          (click)="confirmReset()"
+                          [disabled]="loading">
+                    <i class="feather icon-refresh-cw me-2"></i>
+                    Conferma Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Success Dialog -->
+        <div *ngIf="showSuccessDialog" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.4);">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+              <div class="modal-header border-0 bg-success bg-opacity-10 border-bottom border-success">
+                <h5 class="modal-title text-dark fw-normal">
+                  <i class="feather icon-check-circle me-3 text-success"></i>
+                  {{ successDialogTitle }}
+                </h5>
+              </div>
+              <div class="modal-body p-4 text-center">
+                
+                <!-- Success icon -->
+                <div class="mb-4">
+                  <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px;">
+                    <i class="feather icon-check text-white bg-success rounded-circle p-2" style="font-size: 2rem;"></i>
+                  </div>
+                </div>
+                
+                <!-- Success message -->
+                <div class="mb-4">
+                  <h6 class="text-dark mb-3">{{ successDialogMessage }}</h6>
+                  <div *ngIf="successDialogDetails" class="text-muted">
+                    <div *ngFor="let detail of successDialogDetails" class="mb-1">
+                      {{ detail }}
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Action button -->
+                <button type="button" 
+                        class="btn btn-success px-4" 
+                        (click)="closeSuccessDialog()">
+                  <i class="feather icon-check me-2"></i>
+                  Perfetto!
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+          </div>
+          <h5>Caricamento pedigree in corso...</h5>
+          <p class="text-muted">Attendere prego...</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !loading" class="alert alert-danger" role="alert">
+          <i class="feather icon-alert-triangle me-2"></i>
+          <strong>Errore:</strong> {{ error }}
+          <button 
+            type="button" 
+            class="btn btn-sm btn-outline-danger ms-3" 
+            (click)="initializePedigreeViewer()"
+          >
+            <i class="feather icon-refresh-cw me-1"></i>
+            Riprova
+          </button>
+        </div>
+
+        <!-- Patient Info -->
+        <div *ngIf="!loading && !error && patient" class="patient-info mb-4">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="info-card">
+                <h6 class="text-muted mb-1">Paziente</h6>
+                <h4 class="mb-0">{{ patient.firstName }} {{ patient.lastName }}</h4>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="info-card">
+                <h6 class="text-muted mb-1">ID Paziente</h6>
+                <h5 class="mb-0">#{{ patient.id }}</h5>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="info-card">
+                <h6 class="text-muted mb-1">Modalità</h6>
+                <span class="badge" [class]="mode === 'CREATE' ? 'bg-success' : 'bg-primary'">
+                  {{ mode === 'CREATE' ? 'Creazione' : 'Modifica' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div *ngIf="!loading && !error && pedigreeInitialized" class="zoom-controls mb-4">
+          <div class="card bg-light border-0">
+            <div class="card-body py-3">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <h6 class="mb-0 text-muted">
+                    <i class="feather icon-zoom-in me-2"></i>
+                    Controlli Visualizzazione
+                  </h6>
+                </div>
+                <div class="col-md-6">
+                  <div class="d-flex justify-content-end gap-2">
+                    
+                    <!-- Zoom Controls Group -->
+                    <div class="btn-group" role="group" aria-label="Zoom Controls">
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-secondary btn-sm"
+                        (click)="zoomIn()"
+                        [disabled]="!pedigreeInitialized"
+                        title="Zoom In - Ingrandisci il pedigree">
+                        <i class="feather icon-zoom-in"></i>
+                      </button>
+                      
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-secondary btn-sm"
+                        (click)="zoomOut()"
+                        [disabled]="!pedigreeInitialized"
+                        title="Zoom Out - Rimpicciolisci il pedigree">
+                        <i class="feather icon-zoom-out"></i>
+                      </button>
+                      
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="scaleToFit()"
+                        [disabled]="!pedigreeInitialized"
+                        title="Scale to Fit - Adatta il pedigree alla finestra">
+                        <i class="feather icon-target"></i>
+                      </button>
+
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-warning btn-sm"
+                        (click)="toggleFullscreen()"
+                        [disabled]="!pedigreeInitialized"
+                        title="Fullscreen - Visualizza a schermo intero">
+                        <i class="feather icon-maximize-2"></i>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PedigreeJS Container -->
+        <div *ngIf="!loading && !error" 
+             class="pedigree-container"
+             [class.pedigree-loading]="!pedigreeInitialized"
+             [class.pedigree-active]="pedigreeInitialized">
+          
+          <!-- Show placeholder only when PedigreeJS is not initialized -->
+          <div *ngIf="!pedigreeInitialized" class="pedigree-placeholder">
+            <div class="text-center py-5">
+              <i class="feather icon-sitemap" style="font-size: 4rem; color: #dee2e6;"></i>
+              <h4 class="mt-3 text-muted">Inizializzazione PedigreeJS</h4>
+              <p class="text-muted">
+                Preparazione dell'editor pedigree in corso...
+              </p>
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Caricamento...</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- PedigreeJS Containers (always rendered, but hidden when not initialized) -->
+          <div class="pedigree-content" [style.display]="pedigreeInitialized ? 'block' : 'none'">
+            <!-- PedigreeJS Buttons Container -->
+            <div id="pedigree-buttons" class="pedigree-buttons-container mb-3"></div>
+            
+            <!-- PedigreeJS Main Container -->
+            <div id="pedigree-container" class="pedigree-main-container"></div>
+            
+            <!-- PedigreeJS Node Properties Container - FIXED ID NAME -->
+            <div id="node_properties" class="pedigree-properties-container mt-3"></div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ Main Content ] end -->

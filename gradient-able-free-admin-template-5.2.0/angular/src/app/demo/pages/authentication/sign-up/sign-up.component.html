@@ -1,0 +1,164 @@
+<div class="auth-wrapper">
+  <div class="auth-content">
+    <div class="card">
+      <div class="row align-items-center text-center">
+        <div class="col-md-12">
+          <div class="card-body">
+            <img src="assets/images/logoFinale2.png" alt="logo" class="img-fluid mb-4" />
+            <h4 class="mb-3 f-w-400">Sign up</h4>
+            
+            <form (ngSubmit)="onSubmit()">
+              <!-- Alert per errori -->
+              <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+              
+              <!-- Username -->
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1"><i class="feather icon-user"></i></span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Username" 
+                  aria-label="Username" 
+                  aria-describedby="basic-addon1"
+                  name="username"
+                  [(ngModel)]="registerRequest.username"
+                  required />
+              </div>
+              
+              <!-- Email -->
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon2"><i class="feather icon-mail"></i></span>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  placeholder="Email address" 
+                  aria-label="Email" 
+                  aria-describedby="basic-addon2"
+                  name="email"
+                  [(ngModel)]="registerRequest.email"
+                  required />
+              </div>
+              
+              <!-- Password -->
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon3"><i class="feather icon-lock"></i></span>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  placeholder="Password" 
+                  aria-label="Password" 
+                  aria-describedby="basic-addon3"
+                  name="password"
+                  [(ngModel)]="registerRequest.password"
+                  required />
+              </div>
+              
+              <!-- First Name -->
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon4"><i class="feather icon-user"></i></span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="First Name" 
+                  aria-label="First Name" 
+                  aria-describedby="basic-addon4"
+                  name="firstName"
+                  [(ngModel)]="registerRequest.firstName"
+                  required />
+              </div>
+              
+              <!-- Last Name -->
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon5"><i class="feather icon-user"></i></span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Last Name" 
+                  aria-label="Last Name" 
+                  aria-describedby="basic-addon5"
+                  name="lastName"
+                  [(ngModel)]="registerRequest.lastName"
+                  required />
+              </div>
+              
+              <!-- Phone -->
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon6"><i class="feather icon-phone"></i></span>
+                <input 
+                  type="tel" 
+                  class="form-control" 
+                  placeholder="Phone Number" 
+                  aria-label="Phone" 
+                  aria-describedby="basic-addon6"
+                  name="phone"
+                  [(ngModel)]="registerRequest.phone"
+                  required />
+              </div>
+              
+              <!-- Date of Birth (Optional) -->
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon7"><i class="feather icon-calendar"></i></span>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  placeholder="Date of Birth" 
+                  aria-label="Date of Birth" 
+                  aria-describedby="basic-addon7"
+                  name="dateBirth"
+                  [(ngModel)]="registerRequest.dateBirth" />
+                <small class="form-text text-muted w-100 text-start ps-2">Optional</small>
+              </div>
+              
+              <!-- Address (Optional) -->
+              <div class="input-group mb-4">
+                <span class="input-group-text" id="basic-addon8"><i class="feather icon-map-pin"></i></span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Address" 
+                  aria-label="Address" 
+                  aria-describedby="basic-addon8"
+                  name="address"
+                  [(ngModel)]="registerRequest.address" />
+                <small class="form-text text-muted w-100 text-start ps-2">Optional</small>
+              </div>
+              
+              <!-- Newsletter Checkbox -->
+              <div class="form-group text-start mt-2">
+                <div class="checkbox checkbox-primary d-inline">
+                  <input 
+                    type="checkbox" 
+                    name="subscribeNewsletter" 
+                    id="checkbox-fill-2"
+                    [(ngModel)]="subscribeNewsletter" />
+                  <label for="checkbox-fill-2" class="cr">
+                    Send me the
+                    <a href="javascript:">Newsletter</a>
+                    weekly.
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Submit Button -->
+              <div class="d-grid">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary btn-block mb-4"
+                  [disabled]="loading || !registerRequest.username || !registerRequest.password || !registerRequest.email ||
+                  !registerRequest.firstName || !registerRequest.lastName || !registerRequest.phone">
+                  <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                  Sign up
+                </button>
+              </div>
+            </form>
+            
+            <p class="mb-2">
+              Already have an account?
+              <a [routerLink]="['/auth/signin']" class="f-w-400">Signin</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

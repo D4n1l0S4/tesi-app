@@ -1,0 +1,153 @@
+<!-- Header con pulsante Aggiungi Paziente -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">Lista Pazienti</h4>
+      <button class="btn btn-primary" (click)="toggleForm()">
+        <i class="fa fa-plus me-2"></i>Aggiungi Paziente
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Campo di ricerca -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="input-group">
+      <span class="input-group-text">
+        <i class="fa fa-search"></i>
+      </span>
+      <input 
+        type="text" 
+        class="form-control" 
+        placeholder="Ricerca paziente..." 
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()">
+    </div>
+  </div>
+</div>
+
+<!-- Form di inserimento paziente -->
+<app-patient-form 
+  *ngIf="showForm"
+  [patient]="selectedPatient"
+  (cancel)="toggleForm()"
+  (save)="onPatientSaved($event)">
+</app-patient-form>
+
+<!-- Messaggi di errore e loading -->
+<div *ngIf="error" class="alert alert-danger">
+  {{ error }}
+</div>
+
+<div *ngIf="loading" class="text-center my-4">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Caricamento...</span>
+  </div>
+</div>
+
+<!-- Dialog di conferma eliminazione -->
+<app-confirm-dialog
+  *ngIf="showDeleteConfirm"
+  [patientName]="patientToDelete?.firstName + ' ' + patientToDelete?.lastName"
+  (confirm)="onDeleteConfirm()"
+  (cancel)="onDeleteCancel()">
+</app-confirm-dialog>
+
+<!-- Tabella pazienti -->
+<div *ngIf="!loading && !error" class="card">
+  <div class="card-body">
+    <!-- Controlli paginazione -->
+    <div class="row mb-3" *ngIf="totalItems > 0">
+      <div class="col-md-6">
+        <label class="form-label">Righe per pagina:</label>
+        <select class="form-select" [(ngModel)]="pageSize" (change)="onPageSizeChange($event)">
+          <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+          <option [ngValue]="totalItems">Tutti</option>
+        </select>
+      </div>
+      <div class="col-md-6 text-end">
+        <span class="text-muted">
+          Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalItems) }} di {{ totalItems }} elementi
+        </span>
+      </div>
+    </div>
+
+    <!-- Tabella -->
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th *ngFor="let col of columns" 
+                [class.sortable]="col.sortable"
+                (click)="col.sortable ? onSort(col.key) : null"
+                [style.cursor]="col.sortable ? 'pointer' : 'default'">
+              {{ col.label }}
+              <i *ngIf="col.sortable" class="fa {{ getSortIcon(col.key) }} ms-1"></i>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let patient of displayedPatients">
+            <td *ngFor="let col of columns">
+              <ng-container *ngIf="col.key !== 'actions'">
+                <ng-container *ngIf="col.type === 'date'">
+                  {{ getPatientValue(patient, col) | date:'dd/MM/yyyy' }}
+                </ng-container>
+                <ng-container *ngIf="col.type !== 'date'">
+                  {{ getPatientValue(patient, col) }}
+                </ng-container>
+              </ng-container>
+              <ng-container *ngIf="col.key === 'actions'">
+                <button class="btn btn-sm btn-info" title="Visualizza dettagli paziente" (click)="viewDetails(patient)">
+                  <i class="fa fa-eye me-1"></i>Dettagli
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Messaggio nessun dato -->
+    <div *ngIf="totalItems === 0" class="alert alert-info">
+      Nessun paziente trovato
+    </div>
+
+    <!-- Navigazione paginazione -->
+    <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalItems > 0">
+      <div>
+        <button class="btn btn-outline-primary" 
+                [disabled]="currentPage === 1"
+                (click)="onPageChange(currentPage - 1)">
+          <i class="fa fa-chevron-left me-1"></i>Precedente
+        </button>
+      </div>
+      <div class="btn-group">
+        <button *ngFor="let page of pages" 
+                class="btn"
+                [class.btn-primary]="page === currentPage"
+                [class.btn-outline-primary]="page !== currentPage"
+                (click)="onPageChange(page)">
+          {{ page }}
+        </button>
+      </div>
+      <div>
+        <button class="btn btn-outline-primary"
+                [disabled]="currentPage === totalPages"
+                (click)="onPageChange(currentPage + 1)">
+          Successivo<i class="fa fa-chevron-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Patient Details Modal -->
+<app-patient-details
+  [patient]="patientDetails"
+  [show]="showDetailsModal"
+  (close)="closeDetails()"
+  (edit)="toggleForm($event)"
+  (delete)="onDeleteClick($event)">
+</app-patient-details> 

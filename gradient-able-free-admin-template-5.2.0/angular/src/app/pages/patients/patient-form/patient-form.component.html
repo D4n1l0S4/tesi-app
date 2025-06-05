@@ -1,0 +1,88 @@
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ isEditMode ? 'Modifica Paziente' : 'Nuovo Paziente' }}</h5>
+    <button class="btn btn-secondary" (click)="onCancel()">
+      <i class="fa fa-times me-2"></i>Annulla
+    </button>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nome</label>
+          <input type="text" class="form-control" formControlName="firstName">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Cognome</label>
+          <input type="text" class="form-control" formControlName="lastName">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Data di Nascita</label>
+          <input type="date" class="form-control" formControlName="dateOfBirth">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" formControlName="email">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Telefono</label>
+          <input type="tel" class="form-control" formControlName="phone">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Indirizzo</label>
+          <input type="text" class="form-control" formControlName="address">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Codice Fiscale</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            formControlName="fiscalCode"
+            (input)="onFiscalCodeChange($event)"
+            [class.is-invalid]="fiscalCodeError"
+            maxlength="16">
+          <div class="invalid-feedback" *ngIf="fiscalCodeError">
+            {{ fiscalCodeError }}
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Sesso</label>
+          <select class="form-select" formControlName="gender">
+            <option value="">Seleziona sesso</option>
+            <option value="M">Maschio</option>
+            <option value="F">Femmina</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Debug info per capire perché il bottone è disabilitato -->
+      <div *ngIf="form.invalid || !isFiscalCodeValid" class="alert alert-warning small mb-3">
+        <strong>⚠️ Il bottone è disabilitato perché:</strong>
+        <ul class="mb-0 mt-1">
+          <li *ngIf="form.get('firstName')?.invalid">Nome è obbligatorio</li>
+          <li *ngIf="form.get('lastName')?.invalid">Cognome è obbligatorio</li>
+          <li *ngIf="form.get('dateOfBirth')?.invalid">Data di nascita è obbligatoria</li>
+          <li *ngIf="form.get('email')?.invalid">Email è obbligatoria e deve essere valida</li>
+          <li *ngIf="form.get('phone')?.invalid">Telefono è obbligatorio</li>
+          <li *ngIf="form.get('address')?.invalid">Indirizzo è obbligatorio</li>
+          <li *ngIf="form.get('fiscalCode')?.invalid">Codice fiscale è obbligatorio (16 caratteri)</li>
+          <li *ngIf="form.get('gender')?.invalid">Sesso è obbligatorio</li>
+          <li *ngIf="!isFiscalCodeValid && fiscalCodeError">{{ fiscalCodeError }}</li>
+        </ul>
+      </div>
+      
+      <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">Annulla</button>
+        
+        <button 
+          type="submit" 
+          class="btn btn-primary" 
+          [disabled]="form.invalid || !isFiscalCodeValid"
+          [title]="(form.invalid || !isFiscalCodeValid) ? 'Compila tutti i campi obbligatori correttamente' : ''">
+          {{ isEditMode ? 'Aggiorna' : 'Salva' }}
+          <span *ngIf="form.invalid || !isFiscalCodeValid" class="ms-1">🔒</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div> 

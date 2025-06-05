@@ -1,0 +1,165 @@
+<!-- Messaggio di errore generale -->
+<div *ngIf="errorMessage" class="alert alert-danger mb-3">
+  {{ errorMessage }}
+</div>
+
+<form [formGroup]="caregiverForm" (ngSubmit)="onSubmit()" class="caregiver-form">
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="firstName" class="form-label">Nome *</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="firstName" 
+        formControlName="firstName" 
+        [ngClass]="{'is-invalid': submitted && f['firstName'].errors}"
+        [readonly]="readonlyFields"
+      >
+      <div *ngIf="submitted && f['firstName'].errors" class="invalid-feedback">
+        Nome è obbligatorio
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="lastName" class="form-label">Cognome *</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="lastName" 
+        formControlName="lastName"
+        [ngClass]="{'is-invalid': submitted && f['lastName'].errors}"
+        [readonly]="readonlyFields"
+      >
+      <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback">
+        Cognome è obbligatorio
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="email" class="form-label">Email *</label>
+      <input 
+        type="email" 
+        class="form-control" 
+        id="email" 
+        formControlName="email"
+        [ngClass]="{'is-invalid': submitted && f['email'].errors}"
+        [readonly]="readonlyFields"
+      >
+      <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+        <span *ngIf="f['email'].errors?.['required']">Email è obbligatoria</span>
+        <span *ngIf="f['email'].errors?.['email']">Inserire un'email valida</span>
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="phone" class="form-label">Telefono *</label>
+      <input 
+        type="tel" 
+        class="form-control" 
+        id="phone" 
+        formControlName="phone"
+        [ngClass]="{'is-invalid': submitted && f['phone'].errors}"
+        [readonly]="readonlyFields"
+      >
+      <div *ngIf="submitted && f['phone'].errors" class="invalid-feedback">
+        <span *ngIf="f['phone'].errors?.['required']">Telefono è obbligatorio</span>
+        <span *ngIf="f['phone'].errors?.['invalidPhone']">Inserire un numero di telefono valido (solo numeri)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="address" class="form-label">Indirizzo *</label>
+    <input 
+      type="text" 
+      class="form-control" 
+      id="address" 
+      formControlName="address"
+      [ngClass]="{'is-invalid': submitted && f['address'].errors}"
+      [readonly]="readonlyFields"
+    >
+    <div *ngIf="submitted && f['address'].errors" class="invalid-feedback">
+      Indirizzo è obbligatorio
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="dateOfBirth" class="form-label">Data di Nascita *</label>
+      <input 
+        type="date" 
+        class="form-control" 
+        id="dateOfBirth" 
+        formControlName="dateOfBirth"
+        [ngClass]="{'is-invalid': submitted && f['dateOfBirth'].errors}"
+        [readonly]="readonlyFields"
+      >
+      <div *ngIf="submitted && f['dateOfBirth'].errors" class="invalid-feedback">
+        Data di Nascita è obbligatoria
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="fiscalCode" class="form-label">Codice Fiscale *</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="fiscalCode" 
+        formControlName="fiscalCode"
+        [ngClass]="{'is-invalid': submitted && f['fiscalCode'].errors}"
+        [readonly]="readonlyFields"
+      >
+      <div *ngIf="submitted && f['fiscalCode'].errors" class="invalid-feedback">
+        <div *ngIf="f['fiscalCode'].errors['required']">Codice fiscale è obbligatorio</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="gender" class="form-label">Sesso *</label>
+    <ng-container *ngIf="!readonlyFields; else readonlyGender">
+      <select 
+        class="form-select" 
+        id="gender" 
+        formControlName="gender"
+        [ngClass]="{'is-invalid': submitted && f['gender'].errors}"
+      >
+        <option value="">Seleziona sesso</option>
+        <option value="M">Maschio</option>
+        <option value="F">Femmina</option>
+        <option value="A">Altro</option>
+      </select>
+      <div *ngIf="submitted && f['gender'].errors" class="invalid-feedback">
+        <div *ngIf="f['gender'].errors['required']">Sesso è obbligatorio</div>
+      </div>
+    </ng-container>
+    <ng-template #readonlyGender>
+      <input type="text" class="form-control" [value]="getGenderLabel(caregiverForm.get('gender')?.value)" readonly>
+    </ng-template>
+  </div>
+
+  <div class="mb-3">
+    <label for="relationship" class="form-label">Relazione *</label>
+    <select 
+      class="form-select" 
+      id="relationship" 
+      formControlName="relationship"
+      [ngClass]="{'is-invalid': submitted && f['relationship'].errors}"
+    >
+      <option value="">Seleziona una relazione</option>
+      <option value="coniuge">Coniuge</option>
+      <option value="figlio">Figlio/a</option>
+      <option value="fratello">Fratello/Sorella</option>
+      <option value="amico">Amico/a</option>
+      <option value="familiare">Familiare</option>
+      <option value="altro">Altro</option>
+    </select>
+    <div *ngIf="submitted && f['relationship'].errors" class="invalid-feedback">
+      Relazione è obbligatoria
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-secondary me-2" (click)="onCancel()">Annulla</button>
+    <button type="submit" class="btn btn-primary">Aggiungi Caregiver</button>
+  </div>
+</form> 

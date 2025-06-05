@@ -1,0 +1,142 @@
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h2 class="mb-0">Genetica</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header">
+        <h5>Lista Pazienti per Analisi Genetica</h5>
+      </div>
+      <div class="card-body">
+        
+        <!-- Loading Spinner -->
+        <div *ngIf="loadingPatients" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+          </div>
+          <p class="mt-2">Caricamento pazienti in corso...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="error" class="alert alert-danger" role="alert">
+          <i class="feather icon-alert-circle me-2"></i>
+          {{ error }}
+          <button type="button" class="btn btn-sm btn-outline-danger ms-3" (click)="loadPatients()">
+            Riprova
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div *ngIf="!loadingPatients && !error" class="mb-3">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="feather icon-search"></i>
+                </span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Cerca per nome o cognome..." 
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearchChange()"
+                >
+                <button 
+                  *ngIf="searchTerm" 
+                  class="btn btn-outline-secondary" 
+                  type="button" 
+                  (click)="searchTerm = ''; onSearchChange()"
+                  title="Cancella ricerca"
+                >
+                  <i class="feather icon-x"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center">
+              <small class="text-muted">
+                Trovati {{ filteredPatients.length }} di {{ patients.length }} pazienti
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Patients Table -->
+        <div *ngIf="!loadingPatients && !error && filteredPatients.length > 0">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Nome</th>
+                  <th>Cognome</th>
+                  <th>Data di Nascita</th>
+                  <th>Età</th>
+                  <th>Genere</th>
+                  <th>Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let patient of filteredPatients">
+                  <td>{{ patient.firstName }}</td>
+                  <td>{{ patient.lastName }}</td>
+                  <td>{{ patient.dateOfBirth | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <span class="text-muted">{{ calculateAge(patient.dateOfBirth) }}</span>
+                  </td>
+                  <td>
+                    <span class="badge bg-light" [class]="patient.gender === 'M' ? 'text-primary' : 'text-danger'" style="font-size: 1.1rem; font-weight: bold;">
+                      {{ patient.gender === 'M' ? '♂' : '♀' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button 
+                      class="btn btn-sm"
+                      [class]="getPedigreeButtonClass(patient)"
+                      [disabled]="checkingPedigreeStatus[patient.id!]"
+                      (click)="handlePedigreeAction(patient)"
+                      [title]="getPedigreeButtonText(patient)"
+                    >
+                      <i *ngIf="checkingPedigreeStatus[patient.id!]" class="feather icon-loader me-1 fa-spin"></i>
+                      <i *ngIf="!checkingPedigreeStatus[patient.id!]" [class]="getPedigreeButtonIcon(patient)" class="me-1"></i>
+                      {{ getPedigreeButtonText(patient) }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div *ngIf="!loadingPatients && !error && filteredPatients.length === 0 && patients.length > 0" class="text-center py-4">
+          <i class="feather icon-search" style="font-size: 3rem; color: #ccc;"></i>
+          <h5 class="mt-3 text-muted">Nessun risultato trovato</h5>
+          <p class="text-muted">Nessun paziente corrisponde ai criteri di ricerca "{{ searchTerm }}"</p>
+          <button class="btn btn-outline-primary" (click)="searchTerm = ''; onSearchChange()">
+            Mostra tutti i pazienti
+          </button>
+        </div>
+
+        <!-- No Data Message -->
+        <div *ngIf="!loadingPatients && !error && patients.length === 0" class="text-center py-4">
+          <i class="feather icon-users" style="font-size: 3rem; color: #ccc;"></i>
+          <h5 class="mt-3 text-muted">Nessun paziente trovato</h5>
+          <p class="text-muted">Non ci sono pazienti disponibili per le analisi genetiche.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ Main Content ] end -->

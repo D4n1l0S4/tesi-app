@@ -1,0 +1,87 @@
+.table {
+  th {
+    font-weight: 600;
+    &.sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-right: 20px;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      i.fa {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8em;
+        opacity: 0.5;
+      }
+
+      &.active {
+        background-color: rgba(0, 0, 0, 0.05);
+
+        i.fa {
+          opacity: 1;
+        }
+
+        &.asc i.fa-sort-up {
+          opacity: 1;
+        }
+
+        &.desc i.fa-sort-down {
+          opacity: 1;
+        }
+      }
+    }
+
+    // Stile per la colonna delle azioni
+    &:last-child {
+      width: 160px;
+      min-width: 160px;
+    }
+  }
+  
+  td {
+    vertical-align: middle;
+
+    // Stile per la cella delle azioni
+    &:last-child {
+      width: 160px;
+      min-width: 160px;
+      white-space: nowrap;
+    }
+  }
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.pagination {
+  .page-link {
+    color: #2689E2;
+    &:hover {
+      color: #1a6bb3;
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: #2689E2;
+    border-color: #2689E2;
+  }
+  
+  .page-item.disabled .page-link {
+    color: #6c757d;
+  }
+}
+
+.form-select {
+  &:focus {
+    border-color: #2689E2;
+    box-shadow: 0 0 0 0.2rem rgba(38, 137, 226, 0.25);
+  }
+} 

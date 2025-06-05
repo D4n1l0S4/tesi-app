@@ -1,0 +1,355 @@
+<div class="modal" [ngClass]="{'d-block': show, 'show': show}" tabindex="-1" role="dialog" aria-hidden="true" [ngStyle]="{'display': show ? 'block' : 'none'}">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content"> 
+      <div class="modal-header">
+        <h5 class="modal-title">Dettagli Paziente</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="onClose()"></button>
+      </div>
+      <ng-container *ngIf="patient; else noPatient">
+        <div class="modal-body">
+          <div class="patient-caregiver-details">
+            <!-- Sezione Paziente -->
+            <div class="patient-section">
+              <div class="section-header">
+                <div class="section-header-content">
+                  <h4 class="section-title">
+                    <i class="fas fa-user-circle"></i> Paziente
+                  </h4>
+                  <div class="section-actions">
+                    <button type="button" class="btn btn-warning me-2" (click)="onEdit()">
+                      <i class="fa fa-edit me-1"></i>Modifica
+                    </button>
+                    <button type="button" class="btn btn-danger" (click)="onDelete()">
+                      <i class="fa fa-trash me-1"></i>Elimina
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="patient-card">
+                <div class="patient-header">
+                  <div class="patient-name">
+                    <h5>{{ patient.firstName }} {{ patient.lastName }}</h5>
+                    <span class="patient-id badge bg-primary">ID: {{ patient.id }}</span>
+                  </div>
+                </div>
+                <div class="patient-details">
+                  <div class="detail-row">
+                    <div class="detail-item">
+                      <i class="fas fa-birthday-cake"></i>
+                      <strong>Data di Nascita:</strong>
+                      <span>{{ patient.dateOfBirth | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <i class="fas fa-clock"></i>
+                      <strong>Età:</strong>
+                      <span>{{ calculateAge(patient.dateOfBirth) }} anni</span>
+                    </div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-item">
+                      <i class="fas fa-id-card"></i>
+                      <strong>Codice Fiscale:</strong>
+                      <span>{{ patient.fiscalCode || 'Non disponibile' }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <i class="fas fa-venus-mars"></i>
+                      <strong>Sesso:</strong>
+                      <span>{{ getGenderLabel(patient.gender) }}</span>
+                    </div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-item">
+                      <i class="fas fa-envelope"></i>
+                      <strong>Email:</strong>
+                      <span>{{ patient.email || 'Non disponibile' }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <i class="fas fa-phone"></i>
+                      <strong>Telefono:</strong>
+                      <span>{{ patient.phone || 'Non disponibile' }}</span>
+                    </div>
+                  </div>
+                  <div class="detail-row full-width">
+                    <div class="detail-item">
+                      <i class="fas fa-map-marker-alt"></i>
+                      <strong>Indirizzo:</strong>
+                      <span>{{ patient.address || 'Non disponibile' }}</span>
+                    </div>
+                  </div>
+                </div>
+          </div>
+        </div>
+        
+            <!-- Sezione Caregiver -->
+            <div class="caregiver-section">
+              <div class="section-header d-flex justify-content-between align-items-center">
+                <h4 class="section-title">
+                  <i class="fas fa-users"></i> Caregiver Associati
+                </h4>
+                <button type="button" class="btn btn-primary" (click)="onAddCaregiver()">
+                  <i class="fas fa-plus me-1"></i>Aggiungi Caregiver
+                </button>
+              </div>
+
+              <!-- Form di Aggiunta Caregiver -->
+              <div *ngIf="showAddCaregiverForm" class="add-caregiver-form-container mt-3">
+                <ng-container *ngIf="showCaregiverSearch; else showCaregiverForm">
+                  <app-search-caregiver-by-fiscal-code
+                    (caregiverNotFound)="onCaregiverNotFound($event)"
+                    (caregiverFound)="onCaregiverFound($event)"
+                    (cancel)="onCancelAddCaregiver()"
+                  ></app-search-caregiver-by-fiscal-code>
+                </ng-container>
+                <ng-template #showCaregiverForm>
+                  <app-add-caregiver-form
+                    [patientId]="patient?.id!"
+                    [caregiverData]="foundCaregiverData"
+                    [readonlyFields]="readonlyCaregiverFields"
+                    (cancelForm)="onCancelAddCaregiver()"
+                    (submitCaregiver)="onSubmitCaregiver($event)"
+                  ></app-add-caregiver-form>
+                </ng-template>
+              </div>
+
+              <!-- Stato di caricamento -->
+              <div *ngIf="loadingCaregivers" class="loading-container">
+                <div class="spinner-border text-secondary" role="status">
+                  <span class="visually-hidden">Caricamento...</span>
+                </div>
+              </div>
+              
+              <!-- Errore caricamento -->
+              <div *ngIf="caregiverError" class="alert alert-danger">
+                {{ caregiverError }}
+              </div>
+
+              <!-- Lista Caregiver -->
+              <div *ngIf="!loadingCaregivers && !caregiverError" class="caregiver-list">
+                <ng-container *ngIf="caregivers.length > 0; else noCaregivers">
+                  <div class="caregiver-cards">
+                    <div *ngFor="let caregiver of caregivers" class="caregiver-card">
+                      <div class="caregiver-header">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                          <div>
+                            <h5>{{ caregiver.firstName }} {{ caregiver.lastName }}</h5>
+                            <span class="relationship-badge">{{ caregiver.relationship || 'Non specificata' }}</span>
+                          </div>
+                          <div class="d-flex gap-2">
+                            <button type="button" 
+                              class="btn btn-primary btn-sm" 
+                              data-bs-toggle="tooltip" 
+                              data-bs-placement="top" 
+                              title="Modifica Caregiver"
+                              (click)="openEditModal(caregiver)">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" 
+                              class="btn btn-danger btn-sm" 
+                              data-bs-toggle="tooltip" 
+                              data-bs-placement="top" 
+                              title="Elimina Caregiver"
+                              (click)="openDeleteModal(caregiver)">
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="caregiver-details">
+                        <div class="detail-row">
+                          <div class="detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <strong>Email:</strong>
+                            <span>{{ caregiver.email || 'Non disponibile' }}</span>
+                          </div>
+                          <div class="detail-item">
+                            <i class="fas fa-phone"></i>
+                            <strong>Telefono:</strong>
+                            <span>{{ caregiver.phone || 'Non disponibile' }}</span>
+                          </div>
+                        </div>
+                        <div class="detail-row">
+                          <div class="detail-item">
+                            <i class="fas fa-id-card"></i>
+                            <strong>Codice Fiscale:</strong>
+                            <span>{{ caregiver.fiscalCode || 'Non disponibile' }}</span>
+                          </div>
+                          <div class="detail-item">
+                            <i class="fas fa-venus-mars"></i>
+                            <strong>Sesso:</strong>
+                            <span>{{ getGenderLabel(caregiver.gender) }}</span>
+                          </div>
+                        </div>
+                        <div class="detail-row">
+                          <div class="detail-item">
+                            <i class="fas fa-birthday-cake"></i>
+                            <strong>Data di Nascita:</strong>
+                            <span>{{ (caregiver.dateOfBirth | date:'dd/MM/yyyy') || 'Non disponibile' }}</span>
+                          </div>
+                          <div class="detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <strong>Indirizzo:</strong>
+                            <span>{{ caregiver.address || 'Non disponibile' }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+                
+                <!-- Template per nessun caregiver -->
+                <ng-template #noCaregivers>
+                  <div *ngIf="!showAddCaregiverForm" class="alert alert-info mt-3">
+                    Nessun caregiver associato a questo paziente.
+                  </div>
+                </ng-template>
+              </div>
+          </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="onClose()">
+            Chiudi Dettagli
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #noPatient>
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            Nessun paziente selezionato o dati paziente non disponibili.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="onClose()">
+          Chiudi
+        </button>
+      </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="show"></div>
+
+<!-- Messaggio di feedback -->
+<div *ngIf="showFeedback" 
+     class="feedback-message" 
+     [ngClass]="{'success': feedbackType === 'success', 'error': feedbackType === 'error'}"
+     style="position: fixed; top: 20px; right: 20px; padding: 15px; border-radius: 4px; z-index: 9999; color: white; font-weight: 500;">
+  {{ feedbackMessage }}
+</div>
+
+<!-- Modale di conferma eliminazione -->
+<div class="modal" tabindex="-1" [ngClass]="{'d-block': showDeleteModal}" *ngIf="selectedCaregiverForDelete">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Conferma Eliminazione</h5>
+        <button type="button" class="btn-close" (click)="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body">
+        <p>Sei sicuro di voler eliminare il caregiver {{ selectedCaregiverForDelete.firstName }} {{ selectedCaregiverForDelete.lastName }}?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">Annulla</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Elimina</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showDeleteModal"></div>
+
+<!-- Modale di modifica caregiver -->
+<div class="modal" tabindex="-1" [ngClass]="{'d-block': showEditModal}" *ngIf="selectedCaregiverForEdit">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modifica Caregiver</h5>
+        <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="editCaregiverForm" class="row g-3">
+          <!-- Nome e Cognome -->
+          <div class="col-md-6">
+            <label for="firstName" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="firstName" formControlName="firstName">
+            <div class="invalid-feedback" *ngIf="editCaregiverForm.get('firstName')?.invalid && editCaregiverForm.get('firstName')?.touched">
+              Il nome è obbligatorio
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="lastName" class="form-label">Cognome</label>
+            <input type="text" class="form-control" id="lastName" formControlName="lastName">
+            <div class="invalid-feedback" *ngIf="editCaregiverForm.get('lastName')?.invalid && editCaregiverForm.get('lastName')?.touched">
+              Il cognome è obbligatorio
+            </div>
+          </div>
+
+          <!-- Email e Telefono -->
+          <div class="col-md-6">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" formControlName="email">
+            <div class="invalid-feedback" *ngIf="editCaregiverForm.get('email')?.invalid && editCaregiverForm.get('email')?.touched">
+              Inserire un indirizzo email valido
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="phone" class="form-label">Telefono</label>
+            <input type="tel" class="form-control" id="phone" formControlName="phone">
+            <div class="invalid-feedback" *ngIf="editCaregiverForm.get('phone')?.invalid && editCaregiverForm.get('phone')?.touched">
+              Il numero di telefono è obbligatorio
+            </div>
+          </div>
+
+          <!-- Codice Fiscale e Data di Nascita -->
+          <div class="col-md-6">
+            <label for="fiscalCode" class="form-label">Codice Fiscale</label>
+            <input type="text" 
+                   class="form-control" 
+                   [class.is-invalid]="!isEditFiscalCodeValid"
+                   id="fiscalCode" 
+                   formControlName="fiscalCode"
+                   (input)="onEditFiscalCodeChange($event)"
+                   maxlength="16">
+            <div class="invalid-feedback" *ngIf="editFiscalCodeError">
+              {{ editFiscalCodeError }}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="dateOfBirth" class="form-label">Data di Nascita</label>
+            <input type="date" class="form-control" id="dateOfBirth" formControlName="dateOfBirth">
+            <div class="invalid-feedback" *ngIf="editCaregiverForm.get('dateOfBirth')?.invalid && editCaregiverForm.get('dateOfBirth')?.touched">
+              La data di nascita è obbligatoria
+            </div>
+          </div>
+
+          <!-- Indirizzo -->
+          <div class="col-12">
+            <label for="address" class="form-label">Indirizzo</label>
+            <input type="text" class="form-control" id="address" formControlName="address">
+            <div class="invalid-feedback" *ngIf="editCaregiverForm.get('address')?.invalid && editCaregiverForm.get('address')?.touched">
+              L'indirizzo è obbligatorio
+            </div>
+          </div>
+
+          <!-- Relazione -->
+          <div class="col-md-6">
+            <label for="relationship" class="form-label">Relazione con il Paziente</label>
+            <select class="form-select" id="relationship" formControlName="relationship">
+              <option value="">Seleziona una relazione</option>
+              <option *ngFor="let option of relationshipOptions" [value]="option">
+                {{ option }}
+              </option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Annulla</button>
+        <button type="button" class="btn btn-primary" 
+                [disabled]="editCaregiverForm.invalid || !isEditFiscalCodeValid"
+                (click)="saveEditedCaregiver()">Salva Modifiche</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showEditModal"></div>

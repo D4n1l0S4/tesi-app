@@ -1,0 +1,19 @@
+<div class="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Conferma Eliminazione</h5>
+        <button type="button" class="btn-close" (click)="onCancel()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Sei sicuro di voler eliminare il paziente {{ patientName }}?</p>
+        <p class="text-danger">Questa azione non potrà essere annullata.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">Annulla</button>
+        <button type="button" class="btn btn-danger" (click)="onConfirm()">Elimina</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop"></div> 

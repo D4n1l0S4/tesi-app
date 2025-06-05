@@ -1,0 +1,14 @@
+# Ignora la cartella di Eclipse
+.metadata/
+
+# Ignora i target del backend
+backend/target/
+
+# Ignora i node_modules del frontend
+frontend/node_modules/
+frontend/dist/
+
+# Altri file temporanei
+*.log
+.DS_Store
+*.class
