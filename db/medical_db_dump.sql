@@ -1,5 +1,5 @@
 --
--- PostgreSQL database dump
+-- PostgreSQL database dump 05/06/2025 ore 21:30
 --
 
 -- Dumped from database version 17.4
