@@ -662,7 +662,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     }
     
     try {
-      console.log('Retrieving current pedigree data from PedigreeJS cache...');
+      // console.log('Retrieving current pedigree data from PedigreeJS cache...');
       
       // Get current pedigree data from PedigreeJS
       // For bundled version: pedigreejs.pedigreejs_pedcache.current()
@@ -684,20 +684,20 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
         return null;
       }
       
-      console.log(`Raw pedigree data retrieved: ${currentData.length} individuals`);
+      // console.log(`Raw pedigree data retrieved: ${currentData.length} individuals`);
       
       // Log sample of raw data for debugging
       if (currentData.length > 0) {
         const samplePerson = currentData[0];
         const sampleProps = Object.keys(samplePerson);
-        console.log('Sample person properties from PedigreeJS:', sampleProps);
+        // console.log('Sample person properties from PedigreeJS:', sampleProps);
         
         // Check for disease properties in sample
         const diseaseProps = sampleProps.filter(prop => 
           prop.includes('cancer') || prop.includes('diabetes') || prop.includes('heart')
         );
         if (diseaseProps.length > 0) {
-          console.log('Disease properties found in raw data:', diseaseProps);
+          // console.log('Disease properties found in raw data:', diseaseProps);
         }
         
         // Check for relationship properties
@@ -705,14 +705,14 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
           ['mother', 'father', 'mztwin', 'dztwin'].includes(prop)
         );
         if (relationProps.length > 0) {
-          console.log('Relationship properties found in raw data:', relationProps);
+          // console.log('Relationship properties found in raw data:', relationProps);
         }
       }
       
       // Normalize the data (preserving all relevant properties)
       const normalizedData = this.normalizePedigreeData(currentData);
       
-      console.log(`Normalized pedigree data: ${normalizedData.length} individuals`);
+      // console.log(`Normalized pedigree data: ${normalizedData.length} individuals`);
       
       // Verify data integrity after normalization
       if (normalizedData.length !== currentData.length) {
@@ -733,7 +733,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
       if (originalDiseases !== normalizedDiseases) {
         console.error('Disease data loss during normalization! Original diseases:', originalDiseases, 'Normalized diseases:', normalizedDiseases);
       } else if (originalDiseases > 0) {
-        console.log(`✅ Disease data preserved: ${originalDiseases} disease entries maintained`);
+        // console.log(`✅ Disease data preserved: ${originalDiseases} disease entries maintained`);
       }
       
       // Check if relationships are preserved
@@ -748,7 +748,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
       if (originalRelations !== normalizedRelations) {
         console.error('Relationship data loss during normalization! Original relations:', originalRelations, 'Normalized relations:', normalizedRelations);
       } else if (originalRelations > 0) {
-        console.log(`✅ Relationship data preserved: ${originalRelations} parent relationships maintained`);
+        // console.log(`✅ Relationship data preserved: ${originalRelations} parent relationships maintained`);
       }
       
       return normalizedData;
@@ -786,7 +786,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.mode === 'CREATE') {
         // Check if there's more than just the initial proband
         if (currentData.length > 1) {
-          console.log('CREATE mode: Changes detected - more than initial proband');
+          // console.log('CREATE mode: Changes detected - more than initial proband');
           return true;
     }
     
@@ -797,7 +797,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
           const actualKeys = Object.keys(proband);
           const hasExtraProperties = actualKeys.some(key => !expectedKeys.includes(key));
           if (hasExtraProperties) {
-            console.log('CREATE mode: Changes detected - proband has additional properties');
+            // console.log('CREATE mode: Changes detected - proband has additional properties');
             return true;
           }
         }
@@ -812,18 +812,18 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
         
         // Compare lengths first (quick check)
         if (normalizedCurrentData.length !== originalData.length) {
-          console.log('EDIT mode: Changes detected - different number of individuals');
+          // console.log('EDIT mode: Changes detected - different number of individuals');
           return true;
         }
         
         // Deep comparison of actual data
         const hasChanges = this.deepCompareData(originalData, normalizedCurrentData);
         if (hasChanges) {
-          console.log('EDIT mode: Changes detected - data content differs');
+          // console.log('EDIT mode: Changes detected - data content differs');
           return true;
         }
         
-        console.log('EDIT mode: No changes detected - data matches original');
+        // console.log('EDIT mode: No changes detected - data matches original');
         return false;
         }
         
@@ -858,13 +858,13 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
       const currentPerson = currentMap.get(name);
       
       if (!currentPerson) {
-        console.log(`Person removed: ${name}`);
+        // console.log(`Person removed: ${name}`);
         return true;
       }
       
       // Compare all properties of the person
       if (this.comparePersonData(originalPerson, currentPerson)) {
-        console.log(`Person modified: ${name}`);
+        // console.log(`Person modified: ${name}`);
         return true;
       }
     }
@@ -872,7 +872,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     // Check if any new people were added
     for (const [name] of currentMap) {
       if (!originalMap.has(name)) {
-        console.log(`Person added: ${name}`);
+        // console.log(`Person added: ${name}`);
         return true;
       }
     }
@@ -936,7 +936,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
         if ((originalValue == null && currentValue != null) || 
             (originalValue != null && currentValue == null) ||
             (originalValue !== currentValue)) {
-          console.log(`Property changed: ${prop} from "${originalValue}" to "${currentValue}"`);
+          // console.log(`Property changed: ${prop} from "${originalValue}" to "${currentValue}"`);
           return true;
         }
       }
@@ -965,7 +965,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
       return [];
     }
     
-    console.log(`Normalizzazione di ${dataArray.length} persone...`);
+    // console.log(`Normalizzazione di ${dataArray.length} persone...`);
     
     const normalizedData = dataArray.map((person, index) => {
       // Verifica che la persona sia un oggetto valido
@@ -1067,7 +1067,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
       return cleanPerson;
     }).filter(person => person !== null); // Rimuovi persone non valide
     
-    console.log(`Normalizzazione completata: ${normalizedData.length} persone valide`);
+    // console.log(`Normalizzazione completata: ${normalizedData.length} persone valide`);
     
     return normalizedData;
   }
@@ -1094,7 +1094,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
       return null;
     }
     
-    console.log('Building PedigreeRequestDto with data validation...');
+    // console.log('Building PedigreeRequestDto with data validation...');
     
     // Validate data integrity before sending to backend
     const dataValidation = {
@@ -1118,7 +1118,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
         personDiseases.forEach(disease => {
           const ageKey = `${disease}_diagnosis_age`;
           if (person[ageKey]) {
-            console.log(`Person ${person.name || person.display_name} has ${disease} diagnosed at age ${person[ageKey]}`);
+            // console.log(`Person ${person.name || person.display_name} has ${disease} diagnosed at age ${person[ageKey]}`);
           }
         });
       }
@@ -1151,14 +1151,14 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     });
     
     // Log validation results
-    console.log('Data validation results:', {
-      totalIndividuals: dataValidation.totalIndividuals,
-      individualsWithDiseases: dataValidation.individualsWithDiseases,
-      individualsWithRelations: dataValidation.individualsWithRelations,
-      individualsWithAges: dataValidation.individualsWithAges,
-      diseaseTypes: Array.from(dataValidation.diseaseTypes),
-      relationTypes: Array.from(dataValidation.relationTypes)
-    });
+    // console.log('Data validation results:', {
+    //   totalIndividuals: dataValidation.totalIndividuals,
+    //   individualsWithDiseases: dataValidation.individualsWithDiseases,
+    //   individualsWithRelations: dataValidation.individualsWithRelations,
+    //   individualsWithAges: dataValidation.individualsWithAges,
+    //   diseaseTypes: Array.from(dataValidation.diseaseTypes),
+    //   relationTypes: Array.from(dataValidation.relationTypes)
+    // });
     
     // Create the request DTO
     const requestDto: PedigreeRequestDto = {
@@ -1168,19 +1168,19 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
       modifiedBy: currentUserId
     };
     
-    console.log('Built PedigreeRequestDto:', {
-      patientId: requestDto.patientId,
-      dataLength: Array.isArray(requestDto.data) ? requestDto.data.length : 'N/A',
-      createdBy: requestDto.createdBy,
-      modifiedBy: requestDto.modifiedBy,
-      mode: this.mode,
-      dataIntegrity: {
-        hasCompleteData: dataValidation.totalIndividuals > 0,
-        preservesDiseases: dataValidation.individualsWithDiseases > 0,
-        preservesRelations: dataValidation.individualsWithRelations > 0,
-        preservesAges: dataValidation.individualsWithAges > 0
-      }
-    });
+    // console.log('Built PedigreeRequestDto:', {
+    //   patientId: requestDto.patientId,
+    //   dataLength: Array.isArray(requestDto.data) ? requestDto.data.length : 'N/A',
+    //   createdBy: requestDto.createdBy,
+    //   modifiedBy: requestDto.modifiedBy,
+    //   mode: this.mode,
+    //   dataIntegrity: {
+    //     hasCompleteData: dataValidation.totalIndividuals > 0,
+    //     preservesDiseases: dataValidation.individualsWithDiseases > 0,
+    //     preservesRelations: dataValidation.individualsWithRelations > 0,
+    //     preservesAges: dataValidation.individualsWithAges > 0
+    //   }
+    // });
     
     return requestDto;
   }
@@ -1197,7 +1197,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     try {
       // Clear the pedigree cache for this specific patient
       pedigreejs.pedigreejs_pedcache.clear_pedigree_data(this.pedigreeOptions);
-      console.log(`Cleared pedigree cache for patient ${this.patient.id}`);
+      // console.log(`Cleared pedigree cache for patient ${this.patient.id}`);
     } catch (error) {
       console.error('Error clearing pedigree cache:', error);
     }
@@ -2207,7 +2207,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     try {
       // Usa la funzione btn_zoom di PedigreeJS con fattore di ingrandimento
       (window as any).pedigreejs.pedigreejs_zooming.btn_zoom(this.pedigreeOptions, 1.2);
-      console.log('Zoom in applicato');
+      // console.log('Zoom in applicato');
     } catch (error) {
       console.error('Errore durante zoom in:', error);
       this.showIOMessage('❌ Errore durante lo zoom in', 'error');
@@ -2226,7 +2226,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     try {
       // Usa la funzione btn_zoom di PedigreeJS con fattore di rimpicciolimento
       (window as any).pedigreejs.pedigreejs_zooming.btn_zoom(this.pedigreeOptions, 0.8);
-      console.log('Zoom out applicato');
+      // console.log('Zoom out applicato');
     } catch (error) {
       console.error('Errore durante zoom out:', error);
       this.showIOMessage('❌ Errore durante lo zoom out', 'error');
@@ -2245,7 +2245,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     try {
       // Usa la funzione scale_to_fit di PedigreeJS
       (window as any).pedigreejs.pedigreejs_zooming.scale_to_fit(this.pedigreeOptions);
-      console.log('Scale to fit applicato');
+      // console.log('Scale to fit applicato');
       this.showIOMessage('✅ Pedigree adattato alla finestra', 'success');
     } catch (error) {
       console.error('Errore durante scale to fit:', error);
