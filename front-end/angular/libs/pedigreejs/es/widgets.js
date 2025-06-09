@@ -730,6 +730,28 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 			node = d3node.data;
 	}
 
+	// ADDED: Check if this is the last visible child and create hidden replacement
+	if(node.mother && node.father && !node.noparents) {
+		// Get all visible siblings (children of the same parents)
+		let visibleSiblings = utils.getAllChildren(dataset, {name: node.mother}).filter(function(child) {
+			return child.father === node.father && !child.hidden && child.name !== node.name;
+		});
+		
+		// If this is the last visible child, create a hidden replacement BEFORE deletion
+		if(visibleSiblings.length === 0) {
+			let hiddenChild = {
+				"name": utils.makeid(4), 
+				"sex": "U", 
+				"hidden": true,
+				"mother": node.mother,
+				"father": node.father
+			};
+			// Insert the hidden child at the same position
+			let nodeIdx = utils.getIdxByName(dataset, node.name);
+			dataset.splice(nodeIdx, 0, hiddenChild);
+		}
+	}
+
 	if(node.parent_node) {
 		for(i=0; i<node.parent_node.length; i++){
 			let parent = node.parent_node[i];
