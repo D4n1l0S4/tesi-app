@@ -257,6 +257,11 @@ export function addWidgets(opts, node) {
 			addpartner(opts, newdataset, d.data.name);
 			opts.dataset = newdataset;
 			$(document).trigger('rebuild', [opts]);
+		} else if(opt === 'addchild') {
+			newdataset = utils.copy_dataset(pedcache_current(opts));
+			addchild(newdataset, d.data, 'U', 1);
+			opts.dataset = newdataset;
+			$(document).trigger('rebuild', [opts]);
 		}
 		// trigger fhChange event
 		$(document).trigger('fhChange', [opts]);
@@ -500,6 +505,18 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 
 	if (typeof nchild === typeof undefined)
 		nchild = 1;
+	
+	// MODIFIED: Check for hidden children first (for partner couples)
+	let hiddenChildren = findHiddenChildren(dataset, node);
+	
+	if (hiddenChildren.length > 0 && nchild === 1) {
+		// Unhide the first hidden child and update its properties
+		let hiddenChild = hiddenChildren[0];
+		delete hiddenChild.hidden;
+		hiddenChild.sex = sex;  // Allow user to choose the sex
+		return [hiddenChild];
+	}
+	
 	let children = utils.getAllChildren(dataset, node);
 	let ptr_name, idx;
 	if (children.length === 0) {
@@ -528,6 +545,14 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 		newchildren.push(child);
 	}
 	return newchildren;
+}
+
+// Helper function to find hidden children for a given parent
+function findHiddenChildren(dataset, parent) {
+	return dataset.filter(function(person) {
+		return person.hidden === true && 
+			   (person.mother === parent.name || person.father === parent.name);
+	});
 }
 
 //
