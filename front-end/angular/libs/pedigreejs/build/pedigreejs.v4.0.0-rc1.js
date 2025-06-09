@@ -1430,9 +1430,7 @@ var pedigreejs = (function (exports) {
 	}
 
 	// return a non-anonimised pedigree format
-	function get_non_anon_pedigree(dataset, meta) {
-	  let version = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 2;
-	  let ethnicity = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
+	function get_non_anon_pedigree(dataset, meta, version = 2, ethnicity = undefined) {
 	  return get_pedigree(dataset, undefined, meta, false, version, ethnicity);
 	}
 
@@ -1617,9 +1615,7 @@ var pedigreejs = (function (exports) {
 	/**
 	 * Get CanRisk formated pedigree.
 	 */
-	function get_pedigree(dataset, famid, meta, isanon) {
-	  let version = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 3;
-	  let ethnicity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
+	function get_pedigree(dataset, famid, meta, isanon, version = 3, ethnicity = undefined) {
 	  let v = Number.isInteger(version) ? version + ".0" : version.toString();
 	  let msg = "##CanRisk " + v;
 	  if (!famid) {
@@ -3311,7 +3307,8 @@ var pedigreejs = (function (exports) {
 	  partner.noparents = true;
 	  let child = {
 	    "name": makeid(4),
-	    "sex": "M"
+	    "sex": "U",
+	    "hidden": true
 	  };
 	  child.mother = tree_node.data.sex === 'F' ? tree_node.data.name : partner.name;
 	  child.father = tree_node.data.sex === 'F' ? partner.name : tree_node.data.name;
@@ -3745,12 +3742,12 @@ var pedigreejs = (function (exports) {
 	  let flattenNodes = nodes.descendants();
 
 	  // check the number of visible nodes equals the size of the pedigree dataset
-	  let vis_nodes = $.map(opts.dataset, function (p, _i) {
-	    return p.hidden ? null : p;
-	  });
-	  if (vis_nodes.length !== opts.dataset.length) {
-	    throw create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
-	  }
+	  // MODIFIED: Allow hidden nodes - commented out strict validation
+	  // let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
+	  // if(vis_nodes.length !== opts.dataset.length) {
+	  //	throw utils.create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
+	  // }
+
 	  adjust_coords(opts, nodes, flattenNodes);
 	  let ptrLinkNodes = linkNodes(flattenNodes, partners);
 	  check_ptr_links(opts, ptrLinkNodes); // check for crossing of partner lines
