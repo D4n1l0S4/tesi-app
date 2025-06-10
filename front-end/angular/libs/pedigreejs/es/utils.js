@@ -39,7 +39,7 @@ export function validate_pedigree(opts){
 		let famids = [];
 		let display_name;
 		for(let p=0; p<opts.dataset.length; p++) {
-			if(!p.hidden) {
+			if(!opts.dataset[p].hidden) {
 				if(opts.dataset[p].mother || opts.dataset[p].father) {
 					display_name = opts.dataset[p].display_name;
 					if(!display_name)

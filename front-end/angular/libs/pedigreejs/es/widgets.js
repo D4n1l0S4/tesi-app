@@ -745,6 +745,25 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 			node = d3node.data;
 	}
 
+	// ADDED: Check if node has partner and children - hide instead of delete
+	let partners = utils.get_partners(dataset, node);
+	if(partners.length > 0) {
+		let children = utils.getAllChildren(dataset, node).filter(function(child) {
+			return !child.hidden;
+		});
+		
+		if(children.length > 0) {
+			// Node has partner and visible children - hide instead of delete
+			let nodeIdx = utils.getIdxByName(dataset, node.name);
+			dataset[nodeIdx].hidden = true;
+			
+			if(onDone) {
+				onDone(opts, dataset);
+			}
+			return dataset;
+		}
+	}
+
 	// ADDED: Check if this is the last visible child and create hidden replacement
 	if(node.mother && node.father && !node.noparents) {
 		// Get all visible siblings (children of the same parents)

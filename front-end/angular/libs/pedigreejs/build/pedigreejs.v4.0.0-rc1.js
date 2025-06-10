@@ -200,7 +200,7 @@ var pedigreejs = (function (exports) {
 	    let famids = [];
 	    let display_name;
 	    for (let p = 0; p < opts.dataset.length; p++) {
-	      if (!p.hidden) {
+	      if (!opts.dataset[p].hidden) {
 	        if (opts.dataset[p].mother || opts.dataset[p].father) {
 	          display_name = opts.dataset[p].display_name;
 	          if (!display_name) display_name = 'unnamed';
@@ -3377,6 +3377,23 @@ var pedigreejs = (function (exports) {
 	  if (node.id === undefined) {
 	    let d3node = getNodeByName(fnodes, node.name);
 	    if (d3node !== undefined) node = d3node.data;
+	  }
+
+	  // ADDED: Check if node has partner and children - hide instead of delete
+	  let partners = get_partners(dataset, node);
+	  if (partners.length > 0) {
+	    let children = getAllChildren(dataset, node).filter(function (child) {
+	      return !child.hidden;
+	    });
+	    if (children.length > 0) {
+	      // Node has partner and visible children - hide instead of delete
+	      let nodeIdx = getIdxByName(dataset, node.name);
+	      dataset[nodeIdx].hidden = true;
+	      if (onDone) {
+	        onDone(opts, dataset);
+	      }
+	      return dataset;
+	    }
 	  }
 
 	  // ADDED: Check if this is the last visible child and create hidden replacement
