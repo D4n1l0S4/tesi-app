@@ -189,7 +189,7 @@ export function addWidgets(opts, node) {
 				return  (d.data.hidden && !opts.DEBUG ? false : true) &&
 						!((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
 						!(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
-						!(d.data.parent_node === undefined && key === 'addchild') &&
+						// REMOVED: !(d.data.parent_node === undefined && key === 'addchild') &&
 						!((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
 			})
 			.append("text")
