@@ -110,10 +110,11 @@ export function build(options) {
 	let flattenNodes = nodes.descendants();
 
 	// check the number of visible nodes equals the size of the pedigree dataset
-	let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
-	if(vis_nodes.length !== opts.dataset.length) {
-		throw utils.create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
-	}
+	// MODIFIED: Allow hidden nodes - commented out strict validation
+	// let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
+	// if(vis_nodes.length !== opts.dataset.length) {
+	//	throw utils.create_err('NUMBER OF VISIBLE NODES DIFFERENT TO NUMBER IN THE DATASET');
+	// }
 
 	utils.adjust_coords(opts, nodes, flattenNodes);
 

@@ -257,6 +257,11 @@ export function addWidgets(opts, node) {
 			addpartner(opts, newdataset, d.data.name);
 			opts.dataset = newdataset;
 			$(document).trigger('rebuild', [opts]);
+		} else if(opt === 'addchild') {
+			newdataset = utils.copy_dataset(pedcache_current(opts));
+			addchild(newdataset, d.data, 'U', 1);
+			opts.dataset = newdataset;
+			$(document).trigger('rebuild', [opts]);
 		}
 		// trigger fhChange event
 		$(document).trigger('fhChange', [opts]);
@@ -500,6 +505,18 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 
 	if (typeof nchild === typeof undefined)
 		nchild = 1;
+	
+	// MODIFIED: Check for hidden children first (for partner couples)
+	let hiddenChildren = findHiddenChildren(dataset, node);
+	
+	if (hiddenChildren.length > 0 && nchild === 1) {
+		// Unhide the first hidden child and update its properties
+		let hiddenChild = hiddenChildren[0];
+		delete hiddenChild.hidden;
+		hiddenChild.sex = sex;  // Allow user to choose the sex
+		return [hiddenChild];
+	}
+	
 	let children = utils.getAllChildren(dataset, node);
 	let ptr_name, idx;
 	if (children.length === 0) {
@@ -528,6 +545,14 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 		newchildren.push(child);
 	}
 	return newchildren;
+}
+
+// Helper function to find hidden children for a given parent
+function findHiddenChildren(dataset, parent) {
+	return dataset.filter(function(person) {
+		return person.hidden === true && 
+			   (person.mother === parent.name || person.father === parent.name);
+	});
 }
 
 //
@@ -670,7 +695,7 @@ export function addpartner(opts, dataset, name) {
 	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 	partner.noparents = true;
 
-	let child = {"name": utils.makeid(4), "sex": "M"};
+	let child = {"name": utils.makeid(4), "sex": "U", "hidden": true};
 	child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
 	child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
@@ -703,6 +728,28 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		let d3node = utils.getNodeByName(fnodes, node.name);
 		if(d3node !== undefined)
 			node = d3node.data;
+	}
+
+	// ADDED: Check if this is the last visible child and create hidden replacement
+	if(node.mother && node.father && !node.noparents) {
+		// Get all visible siblings (children of the same parents)
+		let visibleSiblings = utils.getAllChildren(dataset, {name: node.mother}).filter(function(child) {
+			return child.father === node.father && !child.hidden && child.name !== node.name;
+		});
+		
+		// If this is the last visible child, create a hidden replacement BEFORE deletion
+		if(visibleSiblings.length === 0) {
+			let hiddenChild = {
+				"name": utils.makeid(4), 
+				"sex": "U", 
+				"hidden": true,
+				"mother": node.mother,
+				"father": node.father
+			};
+			// Insert the hidden child at the same position
+			let nodeIdx = utils.getIdxByName(dataset, node.name);
+			dataset.splice(nodeIdx, 0, hiddenChild);
+		}
 	}
 
 	if(node.parent_node) {
