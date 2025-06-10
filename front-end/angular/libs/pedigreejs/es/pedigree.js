@@ -267,6 +267,10 @@ export function build(options) {
 	partners = ped.selectAll(".partner")
 		.data(ptrLinkNodes)
 		.enter()
+		.filter(function(d) {
+			// Non disegnare linea se uno dei partner è nascosto
+			return !d.mother.data.hidden && !d.father.data.hidden;
+		})
 			.insert("path", "g")
 			.attr("fill", "none")
 			.attr("stroke", "#000")
@@ -395,7 +399,28 @@ export function build(options) {
 									"L" + (xmid + (xmid-xx)) + " " + yy;
 						}
 
-						return "M" + (d.source.x) + "," + (d.source.y ) +
+						// Gestione partner nascosto anche per gemelli
+						let startX = d.source.x;
+						let startY = d.source.y;
+						
+						if(d.source.data.mother) {
+							let ma = utils.getNodeByName(flattenNodes, d.source.data.mother.name);
+							let pa = utils.getNodeByName(flattenNodes, d.source.data.father.name);
+							
+							if(ma.data.hidden && !pa.data.hidden) {
+								// Madre nascosta, padre visibile
+								startX = pa.x;
+								startY = pa.y;
+								ymid = ((pa.y + d.target.y) / 2);
+							} else if(!ma.data.hidden && pa.data.hidden) {
+								// Padre nascosto, madre visibile
+								startX = ma.x;
+								startY = ma.y;
+								ymid = ((ma.y + d.target.y) / 2);
+							}
+						}
+
+						return "M" + startX + "," + startY +
 							   "V" + ymid +
 							   "H" + xmid +
 							   "L" + (d.target.x) + " " + (d.target.y-(opts.symbol_size/2)) +
@@ -406,6 +431,21 @@ export function build(options) {
 				if(d.source.data.mother) {   // check parents depth to see if they are at the same level in the tree
 					let ma = utils.getNodeByName(flattenNodes, d.source.data.mother.name);
 					let pa = utils.getNodeByName(flattenNodes, d.source.data.father.name);
+
+					// Gestione partner nascosto: linea parte dal genitore visibile
+					if(ma.data.hidden && !pa.data.hidden) {
+						// Madre nascosta, padre visibile
+						return "M" + pa.x + "," + pa.y +
+							   "V" + ((pa.y + d.target.y) / 2) +
+							   "H" + (d.target.x) +
+							   "V" + (d.target.y);
+					} else if(!ma.data.hidden && pa.data.hidden) {
+						// Padre nascosto, madre visibile
+						return "M" + ma.x + "," + ma.y +
+							   "V" + ((ma.y + d.target.y) / 2) +
+							   "H" + (d.target.x) +
+							   "V" + (d.target.y);
+					}
 
 					if(ma.depth !== pa.depth) {
 						return "M" + (d.source.x) + "," + ((ma.y + pa.y) / 2) +

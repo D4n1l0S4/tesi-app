@@ -522,6 +522,7 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 	if (children.length === 0) {
 		let partner = addsibling(dataset, node, node.sex === 'F' ? 'M': 'F', node.sex === 'F');
 		partner.noparents = true;
+		partner.hidden = true;  // Partner nascosto per nodi singoli
 		ptr_name = partner.name;
 		idx = utils.getIdxByName(dataset, node.name)+1;
 	} else {
@@ -692,6 +693,20 @@ export function addpartner(opts, dataset, name) {
 	let flat_tree = utils.flatten(root);
 	let tree_node = utils.getNodeByName(flat_tree, name);
 
+	// Controllare se esistono già partner (nascosti)
+	let existingPartners = utils.get_partners(dataset, tree_node.data);
+	
+	if (existingPartners.length > 0) {
+		// Partner nascosto esiste, renderlo visibile
+		let partnerName = existingPartners[0];
+		let partner = utils.getNodeByName(dataset, partnerName);
+		if (partner && partner.hidden) {
+			delete partner.hidden;
+			return; // Non creare nuovo partner
+		}
+	}
+
+	// Comportamento originale se non ci sono partner nascosti
 	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 	partner.noparents = true;
 
