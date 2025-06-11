@@ -342,8 +342,9 @@ export function build(options) {
 		.enter()
 			.filter(function (d) {
 				// filter unless debug is set
+				// ADDED: Also filter out nodes with visual_disconnect
 				return (opts.DEBUG ||
-						(d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden));
+						(d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden && !d.target.data.visual_disconnect));
 			})
 			.insert("path", "g")
 			.attr("fill", "none")

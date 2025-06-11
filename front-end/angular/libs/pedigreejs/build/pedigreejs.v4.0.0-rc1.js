@@ -2919,7 +2919,7 @@ var pedigreejs = (function (exports) {
 	    let widget = node.filter(function (d) {
 	      return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
 	      // REMOVED: !(d.data.parent_node === undefined && key === 'addchild') &&
-	      !(d.data.noparents === undefined && d.data.top_level === undefined && key === 'addparents');
+	      !(d.data.noparents === undefined && d.data.top_level === undefined && !d.data.visual_disconnect && key === 'addparents');
 	    }).append("text").attr("class", key).style("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
 	      return d.x;
 	    }).attr("yy", function (d) {
@@ -3200,6 +3200,27 @@ var pedigreejs = (function (exports) {
 	  });
 	}
 
+	// Helper function to check if both parents of a node are hidden
+	function bothParentsHidden(dataset, node) {
+	  if (!node.mother || !node.father || node.noparents) {
+	    return false;
+	  }
+	  let mother = getNodeByName(dataset, node.mother);
+	  let father = getNodeByName(dataset, node.father);
+	  return mother && father && mother.hidden && father.hidden;
+	}
+
+	// Helper function to check and update visual disconnect for children
+	function updateChildrenVisualDisconnect(dataset) {
+	  dataset.forEach(function (person) {
+	    if (bothParentsHidden(dataset, person)) {
+	      person.visual_disconnect = true;
+	    } else if (person.visual_disconnect && !bothParentsHidden(dataset, person)) {
+	      delete person.visual_disconnect;
+	    }
+	  });
+	}
+
 	//
 	function addsibling(dataset, node, sex, add_lhs, twin_type) {
 	  if (twin_type && $.inArray(twin_type, ["mztwin", "dztwin"]) === -1) return new Error("INVALID TWIN TYPE SET: " + twin_type);
@@ -3234,6 +3255,21 @@ var pedigreejs = (function (exports) {
 	  let node = tree_node.data;
 	  let depth = tree_node.depth; // depth of the node in relation to the root (depth = 1 is a top_level node)
 
+	  // ADDED: Check if node has hidden parents first
+	  if (node.mother && node.father && !node.noparents) {
+	    let hiddenMother = getNodeByName(dataset, node.mother);
+	    let hiddenFather = getNodeByName(dataset, node.father);
+	    if (hiddenMother && hiddenFather && hiddenMother.hidden && hiddenFather.hidden) {
+	      // Reactivate hidden parents
+	      delete hiddenMother.hidden;
+	      delete hiddenFather.hidden;
+	      delete node.visual_disconnect;
+
+	      // Update all children's visual disconnect status
+	      updateChildrenVisualDisconnect(dataset);
+	      return; // Don't create new parents
+	    }
+	  }
 	  let pid = -101;
 	  let ptr_name;
 	  let children = getAllChildren(dataset, node);
@@ -3389,6 +3425,9 @@ var pedigreejs = (function (exports) {
 	      // Node has partner and visible children - hide instead of delete
 	      let nodeIdx = getIdxByName(dataset, node.name);
 	      dataset[nodeIdx].hidden = true;
+
+	      // Update visual disconnect for all children after deletion
+	      updateChildrenVisualDisconnect(dataset);
 	      if (onDone) {
 	        onDone(opts, dataset);
 	      }
@@ -4025,7 +4064,8 @@ var pedigreejs = (function (exports) {
 	  // links to children
 	  ped.selectAll(".link").data(root.links(nodes.descendants())).enter().filter(function (d) {
 	    // filter unless debug is set
-	    return opts.DEBUG || d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden;
+	    // ADDED: Also filter out nodes with visual_disconnect
+	    return opts.DEBUG || d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden && !d.target.data.visual_disconnect;
 	  }).insert("path", "g").attr("fill", "none").attr("stroke-width", function (d, _i) {
 	    if (d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden) return 1;
 	    return opts.DEBUG ? 2 : 1;
