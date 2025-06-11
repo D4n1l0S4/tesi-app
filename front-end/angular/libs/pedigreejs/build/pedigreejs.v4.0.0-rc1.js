@@ -200,7 +200,7 @@ var pedigreejs = (function (exports) {
 	    let famids = [];
 	    let display_name;
 	    for (let p = 0; p < opts.dataset.length; p++) {
-	      if (!p.hidden) {
+	      if (!opts.dataset[p].hidden) {
 	        if (opts.dataset[p].mother || opts.dataset[p].father) {
 	          display_name = opts.dataset[p].display_name;
 	          if (!display_name) display_name = 'unnamed';
@@ -2917,7 +2917,9 @@ var pedigreejs = (function (exports) {
 	  }
 	  for (let key in widgets) {
 	    let widget = node.filter(function (d) {
-	      return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') && !(d.data.parent_node === undefined && key === 'addchild') && !(d.data.noparents === undefined && d.data.top_level === undefined && key === 'addparents');
+	      return (d.data.hidden && !opts.DEBUG ? false : true) && !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') && !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
+	      // REMOVED: !(d.data.parent_node === undefined && key === 'addchild') &&
+	      !(d.data.noparents === undefined && d.data.top_level === undefined && !d.data.visual_disconnect && key === 'addparents');
 	    }).append("text").attr("class", key).style("opacity", 0).attr('font-family', 'FontAwesome').attr("xx", function (d) {
 	      return d.x;
 	    }).attr("yy", function (d) {
@@ -3166,6 +3168,7 @@ var pedigreejs = (function (exports) {
 	  if (children.length === 0) {
 	    let partner = addsibling(dataset, node, node.sex === 'F' ? 'M' : 'F', node.sex === 'F');
 	    partner.noparents = true;
+	    partner.hidden = true; // Partner nascosto per nodi singoli
 	    ptr_name = partner.name;
 	    idx = getIdxByName(dataset, node.name) + 1;
 	  } else {
@@ -3194,6 +3197,27 @@ var pedigreejs = (function (exports) {
 	function findHiddenChildren(dataset, parent) {
 	  return dataset.filter(function (person) {
 	    return person.hidden === true && (person.mother === parent.name || person.father === parent.name);
+	  });
+	}
+
+	// Helper function to check if both parents of a node are hidden
+	function bothParentsHidden(dataset, node) {
+	  if (!node.mother || !node.father || node.noparents) {
+	    return false;
+	  }
+	  let mother = getNodeByName(dataset, node.mother);
+	  let father = getNodeByName(dataset, node.father);
+	  return mother && father && mother.hidden && father.hidden;
+	}
+
+	// Helper function to check and update visual disconnect for children
+	function updateChildrenVisualDisconnect(dataset) {
+	  dataset.forEach(function (person) {
+	    if (bothParentsHidden(dataset, person)) {
+	      person.visual_disconnect = true;
+	    } else if (person.visual_disconnect && !bothParentsHidden(dataset, person)) {
+	      delete person.visual_disconnect;
+	    }
 	  });
 	}
 
@@ -3231,6 +3255,21 @@ var pedigreejs = (function (exports) {
 	  let node = tree_node.data;
 	  let depth = tree_node.depth; // depth of the node in relation to the root (depth = 1 is a top_level node)
 
+	  // ADDED: Check if node has hidden parents first
+	  if (node.mother && node.father && !node.noparents) {
+	    let hiddenMother = getNodeByName(dataset, node.mother);
+	    let hiddenFather = getNodeByName(dataset, node.father);
+	    if (hiddenMother && hiddenFather && hiddenMother.hidden && hiddenFather.hidden) {
+	      // Reactivate hidden parents
+	      delete hiddenMother.hidden;
+	      delete hiddenFather.hidden;
+	      delete node.visual_disconnect;
+
+	      // Update all children's visual disconnect status
+	      updateChildrenVisualDisconnect(dataset);
+	      return; // Don't create new parents
+	    }
+	  }
 	  let pid = -101;
 	  let ptr_name;
 	  let children = getAllChildren(dataset, node);
@@ -3325,6 +3364,20 @@ var pedigreejs = (function (exports) {
 	  let root = roots[opts.targetDiv];
 	  let flat_tree = flatten(root);
 	  let tree_node = getNodeByName(flat_tree, name);
+
+	  // Controllare se esistono già partner (nascosti)
+	  let existingPartners = get_partners(dataset, tree_node.data);
+	  if (existingPartners.length > 0) {
+	    // Partner nascosto esiste, renderlo visibile
+	    let partnerName = existingPartners[0];
+	    let partner = getNodeByName(dataset, partnerName);
+	    if (partner && partner.hidden) {
+	      delete partner.hidden;
+	      return; // Non creare nuovo partner
+	    }
+	  }
+
+	  // Comportamento originale se non ci sono partner nascosti
 	  let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 	  partner.noparents = true;
 	  let child = {
@@ -3360,6 +3413,26 @@ var pedigreejs = (function (exports) {
 	  if (node.id === undefined) {
 	    let d3node = getNodeByName(fnodes, node.name);
 	    if (d3node !== undefined) node = d3node.data;
+	  }
+
+	  // ADDED: Check if node has partner and children - hide instead of delete
+	  let partners = get_partners(dataset, node);
+	  if (partners.length > 0) {
+	    let children = getAllChildren(dataset, node).filter(function (child) {
+	      return !child.hidden;
+	    });
+	    if (children.length > 0) {
+	      // Node has partner and visible children - hide instead of delete
+	      let nodeIdx = getIdxByName(dataset, node.name);
+	      dataset[nodeIdx].hidden = true;
+
+	      // Update visual disconnect for all children after deletion
+	      updateChildrenVisualDisconnect(dataset);
+	      if (onDone) {
+	        onDone(opts, dataset);
+	      }
+	      return dataset;
+	    }
 	  }
 
 	  // ADDED: Check if this is the last visible child and create hidden replacement
@@ -3936,7 +4009,10 @@ var pedigreejs = (function (exports) {
 	    }
 	    return path;
 	  };
-	  partners = ped.selectAll(".partner").data(ptrLinkNodes).enter().insert("path", "g").attr("fill", "none").attr("stroke", "#000").attr("shape-rendering", "auto").attr('d', function (d, _i) {
+	  partners = ped.selectAll(".partner").data(ptrLinkNodes).enter().filter(function (d) {
+	    // Non disegnare linea se uno dei partner è nascosto
+	    return !d.mother.data.hidden && !d.father.data.hidden;
+	  }).insert("path", "g").attr("fill", "none").attr("stroke", "#000").attr("shape-rendering", "auto").attr('d', function (d, _i) {
 	    let node1 = getNodeByName(flattenNodes, d.mother.data.name);
 	    let node2 = getNodeByName(flattenNodes, d.father.data.name);
 	    let consanguity$1 = consanguity(node1, node2, opts);
@@ -3988,7 +4064,8 @@ var pedigreejs = (function (exports) {
 	  // links to children
 	  ped.selectAll(".link").data(root.links(nodes.descendants())).enter().filter(function (d) {
 	    // filter unless debug is set
-	    return opts.DEBUG || d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden;
+	    // ADDED: Also filter out nodes with visual_disconnect
+	    return opts.DEBUG || d.target.data.noparents === undefined && d.source.parent !== null && !d.target.data.hidden && !d.target.data.visual_disconnect;
 	  }).insert("path", "g").attr("fill", "none").attr("stroke-width", function (d, _i) {
 	    if (d.target.data.noparents !== undefined || d.source.parent === null || d.target.data.hidden) return 1;
 	    return opts.DEBUG ? 2 : 1;
@@ -4029,13 +4106,41 @@ var pedigreejs = (function (exports) {
 	          let yy = (ymid + (d.target.y - opts.symbol_size / 2)) / 2;
 	          xhbar = "M" + xx + "," + yy + "L" + (xmid + (xmid - xx)) + " " + yy;
 	        }
-	        return "M" + d.source.x + "," + d.source.y + "V" + ymid + "H" + xmid + "L" + d.target.x + " " + (d.target.y - opts.symbol_size / 2) + xhbar;
+
+	        // Gestione partner nascosto anche per gemelli
+	        let startX = d.source.x;
+	        let startY = d.source.y;
+	        if (d.source.data.mother) {
+	          let ma = getNodeByName(flattenNodes, d.source.data.mother.name);
+	          let pa = getNodeByName(flattenNodes, d.source.data.father.name);
+	          if (ma.data.hidden && !pa.data.hidden) {
+	            // Madre nascosta, padre visibile
+	            startX = pa.x;
+	            startY = pa.y;
+	            ymid = (pa.y + d.target.y) / 2;
+	          } else if (!ma.data.hidden && pa.data.hidden) {
+	            // Padre nascosto, madre visibile
+	            startX = ma.x;
+	            startY = ma.y;
+	            ymid = (ma.y + d.target.y) / 2;
+	          }
+	        }
+	        return "M" + startX + "," + startY + "V" + ymid + "H" + xmid + "L" + d.target.x + " " + (d.target.y - opts.symbol_size / 2) + xhbar;
 	      }
 	    }
 	    if (d.source.data.mother) {
 	      // check parents depth to see if they are at the same level in the tree
 	      let ma = getNodeByName(flattenNodes, d.source.data.mother.name);
 	      let pa = getNodeByName(flattenNodes, d.source.data.father.name);
+
+	      // Gestione partner nascosto: linea parte dal genitore visibile
+	      if (ma.data.hidden && !pa.data.hidden) {
+	        // Madre nascosta, padre visibile
+	        return "M" + pa.x + "," + pa.y + "V" + (pa.y + d.target.y) / 2 + "H" + d.target.x + "V" + d.target.y;
+	      } else if (!ma.data.hidden && pa.data.hidden) {
+	        // Padre nascosto, madre visibile
+	        return "M" + ma.x + "," + ma.y + "V" + (ma.y + d.target.y) / 2 + "H" + d.target.x + "V" + d.target.y;
+	      }
 	      if (ma.depth !== pa.depth) {
 	        return "M" + d.source.x + "," + (ma.y + pa.y) / 2 + "H" + d.target.x + "V" + d.target.y;
 	      }

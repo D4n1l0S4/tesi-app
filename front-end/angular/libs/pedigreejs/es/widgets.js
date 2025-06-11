@@ -189,8 +189,8 @@ export function addWidgets(opts, node) {
 				return  (d.data.hidden && !opts.DEBUG ? false : true) &&
 						!((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
 						!(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
-						!(d.data.parent_node === undefined && key === 'addchild') &&
-						!((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
+						// REMOVED: !(d.data.parent_node === undefined && key === 'addchild') &&
+						!((d.data.noparents === undefined && d.data.top_level === undefined && !d.data.visual_disconnect) && key === 'addparents');
 			})
 			.append("text")
 			.attr("class", key)
@@ -522,6 +522,7 @@ export function addchild(dataset, node, sex, nchild, twin_type) {
 	if (children.length === 0) {
 		let partner = addsibling(dataset, node, node.sex === 'F' ? 'M': 'F', node.sex === 'F');
 		partner.noparents = true;
+		partner.hidden = true;  // Partner nascosto per nodi singoli
 		ptr_name = partner.name;
 		idx = utils.getIdxByName(dataset, node.name)+1;
 	} else {
@@ -552,6 +553,29 @@ function findHiddenChildren(dataset, parent) {
 	return dataset.filter(function(person) {
 		return person.hidden === true && 
 			   (person.mother === parent.name || person.father === parent.name);
+	});
+}
+
+// Helper function to check if both parents of a node are hidden
+function bothParentsHidden(dataset, node) {
+	if (!node.mother || !node.father || node.noparents) {
+		return false;
+	}
+	
+	let mother = utils.getNodeByName(dataset, node.mother);
+	let father = utils.getNodeByName(dataset, node.father);
+	
+	return mother && father && mother.hidden && father.hidden;
+}
+
+// Helper function to check and update visual disconnect for children
+function updateChildrenVisualDisconnect(dataset) {
+	dataset.forEach(function(person) {
+		if (bothParentsHidden(dataset, person)) {
+			person.visual_disconnect = true;
+		} else if (person.visual_disconnect && !bothParentsHidden(dataset, person)) {
+			delete person.visual_disconnect;
+		}
 	});
 }
 
@@ -589,6 +613,23 @@ export function addparents(opts, dataset, name) {
 	let tree_node = utils.getNodeByName(flat_tree, name);
 	let node  = tree_node.data;
 	let depth = tree_node.depth;   // depth of the node in relation to the root (depth = 1 is a top_level node)
+
+	// ADDED: Check if node has hidden parents first
+	if (node.mother && node.father && !node.noparents) {
+		let hiddenMother = utils.getNodeByName(dataset, node.mother);
+		let hiddenFather = utils.getNodeByName(dataset, node.father);
+		
+		if (hiddenMother && hiddenFather && hiddenMother.hidden && hiddenFather.hidden) {
+			// Reactivate hidden parents
+			delete hiddenMother.hidden;
+			delete hiddenFather.hidden;
+			delete node.visual_disconnect;
+			
+			// Update all children's visual disconnect status
+			updateChildrenVisualDisconnect(dataset);
+			return; // Don't create new parents
+		}
+	}
 
 	let pid = -101;
 	let ptr_name;
@@ -692,6 +733,20 @@ export function addpartner(opts, dataset, name) {
 	let flat_tree = utils.flatten(root);
 	let tree_node = utils.getNodeByName(flat_tree, name);
 
+	// Controllare se esistono già partner (nascosti)
+	let existingPartners = utils.get_partners(dataset, tree_node.data);
+	
+	if (existingPartners.length > 0) {
+		// Partner nascosto esiste, renderlo visibile
+		let partnerName = existingPartners[0];
+		let partner = utils.getNodeByName(dataset, partnerName);
+		if (partner && partner.hidden) {
+			delete partner.hidden;
+			return; // Non creare nuovo partner
+		}
+	}
+
+	// Comportamento originale se non ci sono partner nascosti
 	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F');
 	partner.noparents = true;
 
@@ -728,6 +783,28 @@ export function delete_node_dataset(dataset, node, opts, onDone) {
 		let d3node = utils.getNodeByName(fnodes, node.name);
 		if(d3node !== undefined)
 			node = d3node.data;
+	}
+
+	// ADDED: Check if node has partner and children - hide instead of delete
+	let partners = utils.get_partners(dataset, node);
+	if(partners.length > 0) {
+		let children = utils.getAllChildren(dataset, node).filter(function(child) {
+			return !child.hidden;
+		});
+		
+		if(children.length > 0) {
+			// Node has partner and visible children - hide instead of delete
+			let nodeIdx = utils.getIdxByName(dataset, node.name);
+			dataset[nodeIdx].hidden = true;
+			
+				// Update visual disconnect for all children after deletion
+	updateChildrenVisualDisconnect(dataset);
+
+	if(onDone) {
+		onDone(opts, dataset);
+	}
+	return dataset;
+}
 	}
 
 	// ADDED: Check if this is the last visible child and create hidden replacement

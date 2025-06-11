@@ -15,6 +15,16 @@
 .project
 .classpath
 
+# === Visual Studio ===
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+bin/
+obj/
+
 # === Maven ===
 target/
 
@@ -39,4 +49,4 @@ logs/
 *.log.*
 *.gz
 **/logs/**
-back-end/crud/logs/
+back-end/crud/logs/ 
