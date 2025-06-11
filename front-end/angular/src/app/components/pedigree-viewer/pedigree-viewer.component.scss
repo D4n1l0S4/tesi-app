@@ -167,13 +167,13 @@
             display: block;
             
             &.avatar-maschio {
-              color: #007bff;
-              border: 2px solid #007bff;
+              color: #4a90e2;
+              border: 2px solid #4a90e2;
             }
             
             &.avatar-femmina {
-              color: #dc3545;
-              border: 2px solid #dc3545;
+              color: #e74c86;
+              border: 2px solid #e74c86;
             }
           }
         }
@@ -183,6 +183,24 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #495057;
+          }
+          
+          // Stili per il campo nome modificabile
+          .form-control {
+            &.fw-semibold {
+              font-weight: 600;
+              color: #495057;
+              
+              &:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+              }
+              
+              &::placeholder {
+                color: #adb5bd;
+                font-weight: 400;
+              }
+            }
           }
           
           .text-muted {
@@ -557,3 +575,198 @@
     }
   }
 }
+
+/* Stili per il pannello laterale */
+.pannello-laterale {
+  background: #f8f9fa;
+  border-left: 1px solid #dee2e6;
+  height: 100vh;
+  overflow-y: auto;
+  
+  .pannello-header {
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #dee2e6;
+    
+    i {
+      margin-right: 0.5rem;
+    }
+  }
+  
+  .dettagli-persona {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .dettagli-sezione {
+    margin-bottom: 1.5rem;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  .persona-avatar {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+    
+    i {
+      font-size: 1.5rem;
+    }
+    
+    &.avatar-maschio i {
+      color: #4a90e2;
+      border: 2px solid #4a90e2;
+      border-radius: 50%;
+      padding: 0.2rem;
+    }
+    
+    &.avatar-femmina i {
+      color: #e74c86;
+      border: 2px solid #e74c86;
+      border-radius: 50%;
+      padding: 0.2rem;
+    }
+  }
+  
+
+}
+
+/* ===== BOTTONI SESSO MODERNI 2025 ===== */
+.sesso-toggle-modern {
+  display: inline-flex;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1); // Sfondo trasparente che si adatta
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  gap: 6px; // Spaziatura tra i bottoni
+  
+  .btn-toggle {
+    border: none;
+    padding: 8px 16px;
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-width: 45px;
+    
+    // Ripple effect
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transition: width 0.6s, height 0.6s, top 0.6s, left 0.6s;
+      transform: translate(-50%, -50%);
+    }
+    
+    &:active::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    // Stati base (non selezionati - più scuri/opachi)
+    &.btn-maschio {
+      background: rgba(74, 144, 226, 0.3); // Blu del sito opaco
+      color: #495057;
+      
+      &.selected {
+        background: #4a90e2; // Blu del sito vivo
+        color: #000; // Scritta nera
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        transform: translateY(-1px);
+      }
+      
+      &:hover:not(:disabled):not(.selected) {
+        background: rgba(74, 144, 226, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+    
+    &.btn-femmina {
+      background: rgba(231, 76, 134, 0.3); // Rosa più delicato opaco
+      color: #495057;
+      
+      &.selected {
+        background: #e74c86; // Rosa più delicato vivo
+        color: #000; // Scritta nera
+        box-shadow: 0 4px 12px rgba(231, 76, 134, 0.3);
+        transform: translateY(-1px);
+      }
+      
+      &:hover:not(:disabled):not(.selected) {
+        background: rgba(231, 76, 134, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+    
+    &.btn-altro {
+      background: rgba(108, 117, 125, 0.3); // Grigio opaco
+      color: #495057;
+      
+      &.selected {
+        background: #6c757d; // Grigio vivo
+        color: #000; // Scritta nera
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        transform: translateY(-1px);
+      }
+      
+      &:hover:not(:disabled):not(.selected) {
+        background: rgba(108, 117, 125, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+    }
+  }
+  
+  &.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// Animazione di entrata
+.sesso-toggle-modern {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

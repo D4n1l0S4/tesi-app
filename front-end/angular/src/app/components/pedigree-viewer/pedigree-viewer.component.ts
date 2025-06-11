@@ -232,6 +232,250 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   /**
+   * Gestisce le modifiche ai campi del pannello laterale
+   * Replica la logica della funzione save() di PedigreeJS per mantenere la sincronizzazione
+   * @param campo - Nome del campo modificato
+   * @param nuovoValore - Nuovo valore del campo
+   */
+  onCampoModificato(campo: string, nuovoValore: any): void {
+    console.log(`Campo modificato: ${campo} = ${nuovoValore}`);
+    
+    try {
+      if (typeof $ !== 'undefined' && this.pedigreeOptions && this.personaSelezionata) {
+        // Validazione speciale per il campo sesso
+        if (campo === 'sex') {
+          const validationResult = this.validateSexChange(nuovoValore);
+          if (!validationResult.isValid) {
+            // Mostra messaggio di errore e ripristina valore originale
+            alert(validationResult.message);
+            // Ripristina il valore originale nel modello
+            this.personaSelezionata.sex = this.personaSelezionata.sex;
+            return;
+          }
+        }
+        
+        // Replica la logica della funzione save() di PedigreeJS
+        
+        // 1. Ottieni il dataset corrente (come fa PedigreeJS)
+        const currentDataset = this.getCurrentPedigreeData();
+        if (!currentDataset) {
+          console.warn('Dataset corrente non disponibile');
+          return;
+        }
+        
+        // 2. Crea una copia del dataset (come fa PedigreeJS)
+        const newDataset = JSON.parse(JSON.stringify(currentDataset));
+        
+        // 3. Trova la persona nel nuovo dataset
+        const personName = this.personaSelezionata.name;
+        const person = newDataset.find((p: any) => p.name === personName);
+        
+        if (!person) {
+          console.warn('Persona non trovata nel dataset per il salvataggio');
+          return;
+        }
+        
+        // 4. Aggiorna il campo specifico
+        if (nuovoValore !== null && nuovoValore !== undefined && nuovoValore !== '') {
+          person[campo] = nuovoValore;
+        } else {
+          delete person[campo];
+        }
+        
+        // 5. Logica speciale per il campo sesso
+        if (campo === 'sex') {
+          this.updateCancerBySex(person);
+          this.syncTwins(newDataset, person);
+        }
+        
+        // 6. Aggiorna il dataset di PedigreeJS (come fa la funzione save() originale)
+        this.pedigreeOptions.dataset = newDataset;
+        
+        // 7. Triggera gli eventi nell'ordine corretto (come fa PedigreeJS)
+        $(document).trigger('fhChange', [this.pedigreeOptions]);
+        $(document).trigger('rebuild', [this.pedigreeOptions]);
+        
+        // 8. Aggiorna anche la persona selezionata per il pannello
+        this.personaSelezionata = person;
+        this.changeDetectorRef.detectChanges();
+        
+        console.log('Campo aggiornato con successo:', campo, nuovoValore);
+      }
+    } catch (error) {
+      console.error('Errore durante l\'aggiornamento del campo:', error);
+    }
+  }
+
+  /**
+   * Valida se è possibile cambiare il sesso di una persona
+   * Replica la logica di PedigreeJS per la disabilitazione del campo sesso
+   * @param nuovoSesso - Il nuovo sesso proposto
+   * @returns Oggetto con risultato della validazione e messaggio
+   */
+  private validateSexChange(nuovoSesso: string): { isValid: boolean; message: string } {
+    if (!this.personaSelezionata) {
+      return { isValid: false, message: 'Nessuna persona selezionata' };
+    }
+
+    // Se il sesso non cambia, è sempre valido
+    if (this.personaSelezionata.sex === nuovoSesso) {
+      return { isValid: true, message: '' };
+    }
+
+    // Se il sesso attuale è 'U' (Unknown), può essere cambiato in qualsiasi cosa
+    if (this.personaSelezionata.sex === 'U') {
+      return { isValid: true, message: '' };
+    }
+
+    // Controlla se la persona ha partner o figli (parent_node)
+    const hasPartnerOrChildren = this.hasPartnerOrChildren(this.personaSelezionata);
+    
+    if (hasPartnerOrChildren) {
+      return { 
+        isValid: false, 
+        message: 'Non è possibile cambiare il sesso di una persona che ha partner o figli. Questo potrebbe compromettere l\'integrità delle relazioni familiari.' 
+      };
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  /**
+   * Controlla se una persona ha partner o figli
+   * Replica la logica di PedigreeJS: node.parent_node && node.sex !== 'U'
+   * @param person - La persona da controllare
+   * @returns true se ha partner o figli, false altrimenti
+   */
+  private hasPartnerOrChildren(person: any): boolean {
+    try {
+      const currentDataset = this.getCurrentPedigreeData();
+      if (!currentDataset) {
+        return false;
+      }
+
+      // Metodo 1: Controlla se ha partner usando get_partners
+      const partners = this.getPartners(currentDataset, person);
+      if (partners.length > 0) {
+        console.log(`${person.name} ha ${partners.length} partner:`, partners);
+        return true;
+      }
+
+      // Metodo 2: Controlla se ha figli (è madre o padre di qualcuno)
+      const children = currentDataset.filter((p: any) => 
+        (p.mother === person.name || p.father === person.name) && !p.hidden
+      );
+      if (children.length > 0) {
+        console.log(`${person.name} ha ${children.length} figli:`, children.map((c: any) => c.name));
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Errore nel controllo partner/figli:', error);
+      return false; // In caso di errore, permetti la modifica
+    }
+  }
+
+  /**
+   * Replica la funzione get_partners di PedigreeJS
+   * Trova tutti i partner di una persona cercando chi condivide figli con lei
+   * @param dataset - Il dataset del pedigree
+   * @param person - La persona di cui cercare i partner
+   * @returns Array dei nomi dei partner
+   */
+  private getPartners(dataset: any[], person: any): string[] {
+    const partners: string[] = [];
+    
+    for (let i = 0; i < dataset.length; i++) {
+      const otherPerson = dataset[i];
+      
+      // Se questa persona è madre e l'altra è padre dello stesso figlio
+      if (person.name === otherPerson.mother && otherPerson.father && 
+          partners.indexOf(otherPerson.father) === -1) {
+        partners.push(otherPerson.father);
+      }
+      // Se questa persona è padre e l'altra è madre dello stesso figlio  
+      else if (person.name === otherPerson.father && otherPerson.mother && 
+               partners.indexOf(otherPerson.mother) === -1) {
+        partners.push(otherPerson.mother);
+      }
+    }
+    
+    return partners;
+  }
+
+  /**
+   * Replica la funzione update_cancer_by_sex di PedigreeJS
+   * Rimuove malattie incompatibili con il sesso (es. cancro ovarico per maschi)
+   * @param person - La persona di cui aggiornare le malattie
+   */
+  private updateCancerBySex(person: any): void {
+    if (person.sex === 'M') {
+      // I maschi non possono avere cancro ovarico
+      delete person.ovarian_cancer;
+      delete person.ovarian_cancer_diagnosis_age;
+    } else if (person.sex === 'F') {
+      // Le femmine non possono avere cancro alla prostata
+      delete person.prostate_cancer;
+      delete person.prostate_cancer_diagnosis_age;
+    }
+  }
+
+  /**
+   * Replica la funzione syncTwins di PedigreeJS
+   * Sincronizza le proprietà dei gemelli monozigoti (stesso sesso)
+   * @param dataset - Il dataset del pedigree
+   * @param person - La persona modificata
+   */
+  private syncTwins(dataset: any[], person: any): void {
+    if (!person.mztwin && !person.dztwin) {
+      return;
+    }
+
+    const twinType = person.mztwin ? 'mztwin' : 'dztwin';
+    
+    for (let i = 0; i < dataset.length; i++) {
+      const otherPerson = dataset[i];
+      
+      // Se è un gemello dello stesso tipo e non è la stessa persona
+      if (otherPerson[twinType] && person[twinType] === otherPerson[twinType] && 
+          otherPerson.name !== person.name) {
+        
+        // I gemelli monozigoti devono avere lo stesso sesso
+        if (twinType === 'mztwin') {
+          otherPerson.sex = person.sex;
+        }
+        
+        // Sincronizza anche altre proprietà se presenti
+        if (person.yob) {
+          otherPerson.yob = person.yob;
+        }
+        if (person.age && (person.status === 0 || !person.status)) {
+          otherPerson.age = person.age;
+        }
+      }
+    }
+  }
+
+  /**
+   * Determina se il campo sesso può essere modificato per la persona corrente
+   * @returns true se il campo può essere modificato, false altrimenti
+   */
+  canEditSex(): boolean {
+    if (!this.personaSelezionata) {
+      return false;
+    }
+
+    // Se il sesso è 'U' (Unknown), può sempre essere modificato
+    if (this.personaSelezionata.sex === 'U') {
+      return true;
+    }
+
+    // Altrimenti controlla se ha partner o figli
+    return !this.hasPartnerOrChildren(this.personaSelezionata);
+  }
+
+  /**
    * Inizializza il visualizzatore di pedigree determinando se caricare un pedigree esistente o crearne uno nuovo
    * Punto di ingresso principale per l'inizializzazione di PedigreeJS
    */

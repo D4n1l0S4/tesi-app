@@ -530,31 +530,31 @@
           <!-- Pedigree Column -->
           <div class="col-lg-9 col-md-8">
             <div class="pedigree-container"
-                 [class.pedigree-loading]="!pedigreeInitialized"
-                 [class.pedigree-active]="pedigreeInitialized">
-              
-              <!-- Show placeholder only when PedigreeJS is not initialized -->
-              <div *ngIf="!pedigreeInitialized" class="pedigree-placeholder">
-                <div class="text-center py-5">
-                  <i class="feather icon-sitemap" style="font-size: 4rem; color: #dee2e6;"></i>
-                  <h4 class="mt-3 text-muted">Inizializzazione PedigreeJS</h4>
-                  <p class="text-muted">
-                    Preparazione dell'editor pedigree in corso...
-                  </p>
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Caricamento...</span>
-                  </div>
-                </div>
+             [class.pedigree-loading]="!pedigreeInitialized"
+             [class.pedigree-active]="pedigreeInitialized">
+          
+          <!-- Show placeholder only when PedigreeJS is not initialized -->
+          <div *ngIf="!pedigreeInitialized" class="pedigree-placeholder">
+            <div class="text-center py-5">
+              <i class="feather icon-sitemap" style="font-size: 4rem; color: #dee2e6;"></i>
+              <h4 class="mt-3 text-muted">Inizializzazione PedigreeJS</h4>
+              <p class="text-muted">
+                Preparazione dell'editor pedigree in corso...
+              </p>
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Caricamento...</span>
               </div>
-              
-              <!-- PedigreeJS Containers (always rendered, but hidden when not initialized) -->
-              <div class="pedigree-content" [style.display]="pedigreeInitialized ? 'block' : 'none'">
-                <!-- PedigreeJS Buttons Container -->
-                <div id="pedigree-buttons" class="pedigree-buttons-container mb-3"></div>
-                
-                <!-- PedigreeJS Main Container -->
-                <div id="pedigree-container" class="pedigree-main-container"></div>
-                
+            </div>
+          </div>
+          
+          <!-- PedigreeJS Containers (always rendered, but hidden when not initialized) -->
+          <div class="pedigree-content" [style.display]="pedigreeInitialized ? 'block' : 'none'">
+            <!-- PedigreeJS Buttons Container -->
+            <div id="pedigree-buttons" class="pedigree-buttons-container mb-3"></div>
+            
+            <!-- PedigreeJS Main Container -->
+            <div id="pedigree-container" class="pedigree-main-container"></div>
+            
                 <!-- PedigreeJS Node Properties Container - HIDDEN (now using sidebar) -->
                 <div id="node_properties" class="pedigree-properties-container mt-3" style="display: none;"></div>
               </div>
@@ -583,26 +583,70 @@
                   <!-- Dettagli persona selezionata -->
                   <div *ngIf="mostraDettagliPersona && personaSelezionata" class="dettagli-persona">
                     
-                    <!-- Header con nome e sesso -->
-                    <div class="mb-4">
-                      <div class="d-flex align-items-center">
-                        <!-- Avatar a sinistra -->
-                        <div class="persona-avatar me-3">
-                          <i class="feather icon-user" 
-                             [class.avatar-maschio]="personaSelezionata.sex === 'M'"
-                             [class.avatar-femmina]="personaSelezionata.sex === 'F'"></i>
+                    <!-- Sezione Persona -->
+                    <div class="dettagli-sezione">
+                      <!-- Header con avatar e nome allineati -->
+                      <div class="mb-3">
+                        <div class="d-flex align-items-center mb-3">
+                          <!-- Avatar a sinistra -->
+                          <div class="persona-avatar me-3">
+                            <i class="feather icon-user" 
+                               [class.avatar-maschio]="personaSelezionata.sex === 'M'"
+                               [class.avatar-femmina]="personaSelezionata.sex === 'F'"></i>
+                          </div>
+                          
+                          <!-- Nome allineato con avatar -->
+                          <div class="flex-grow-1">
+                            <input type="text" 
+                                   class="form-control form-control-sm fw-semibold"
+                                   [(ngModel)]="personaSelezionata.display_name"
+                                   (ngModelChange)="onCampoModificato('display_name', $event)"
+                                   placeholder="Inserisci nome"
+                                   style="font-size: 1.1rem; border: 1px solid #dee2e6; background: white;">
+                          </div>
                         </div>
                         
-                        <!-- Info persona a destra -->
-                        <div class="persona-info flex-grow-1">
-                          <h5 class="mb-1">{{ personaSelezionata.display_name || 'Senza nome' }}</h5>
-                          <div class="text-muted mb-1">
-                            {{ personaSelezionata.sex === 'M' ? 'Maschio' : (personaSelezionata.sex === 'F' ? 'Femmina' : 'Non specificato') }}
+                        <!-- Sesso sotto in riga separata -->
+                        <div class="mb-2">
+                          <div class="d-flex align-items-center">
+                            <span class="text-muted me-3" style="font-size: 0.9rem; font-weight: 600; min-width: 50px;">Sesso</span>
+                            <div class="sesso-toggle-modern" [class.disabled]="!canEditSex()">
+                              <button type="button" 
+                                      class="btn-toggle btn-maschio" 
+                                      [class.selected]="personaSelezionata.sex === 'M'"
+                                      [class.unselected]="personaSelezionata.sex !== 'M'"
+                                      [disabled]="!canEditSex()"
+                                      (click)="onCampoModificato('sex', 'M')">
+                                M
+                              </button>
+                              <button type="button" 
+                                      class="btn-toggle btn-femmina" 
+                                      [class.selected]="personaSelezionata.sex === 'F'"
+                                      [class.unselected]="personaSelezionata.sex !== 'F'"
+                                      [disabled]="!canEditSex()"
+                                      (click)="onCampoModificato('sex', 'F')">
+                                F
+                              </button>
+                              <button type="button" 
+                                      class="btn-toggle btn-altro" 
+                                      [class.selected]="personaSelezionata.sex === 'U'"
+                                      [class.unselected]="personaSelezionata.sex !== 'U'"
+                                      [disabled]="!canEditSex()"
+                                      (click)="onCampoModificato('sex', 'U')">
+                                Altro
+                              </button>
+                            </div>
+                            <i class="fas fa-lock text-muted ms-2" 
+                               *ngIf="!canEditSex()" 
+                               style="font-size: 0.7rem;"
+                               title="Non modificabile (ha partner/figli)"></i>
                           </div>
-                          <small class="text-muted">
-                            <strong>ID:</strong> {{ personaSelezionata.name }}
-                          </small>
                         </div>
+                        
+                        <!-- ID sotto -->
+                        <small class="text-muted">
+                          <strong>ID:</strong> {{ personaSelezionata.name }}
+                        </small>
                       </div>
                     </div>
 
