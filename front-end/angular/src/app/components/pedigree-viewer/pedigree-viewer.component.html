@@ -524,36 +524,317 @@
       -->
         
 
-        <!-- PedigreeJS Container -->
-        <div *ngIf="!loading && !error" 
-             class="pedigree-container"
-             [class.pedigree-loading]="!pedigreeInitialized"
-             [class.pedigree-active]="pedigreeInitialized">
+        <!-- Main Layout: Pedigree + Sidebar -->
+        <div *ngIf="!loading && !error" class="row">
           
-          <!-- Show placeholder only when PedigreeJS is not initialized -->
-          <div *ngIf="!pedigreeInitialized" class="pedigree-placeholder">
-            <div class="text-center py-5">
-              <i class="feather icon-sitemap" style="font-size: 4rem; color: #dee2e6;"></i>
-              <h4 class="mt-3 text-muted">Inizializzazione PedigreeJS</h4>
-              <p class="text-muted">
-                Preparazione dell'editor pedigree in corso...
-              </p>
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Caricamento...</span>
+          <!-- Pedigree Column -->
+          <div class="col-lg-9 col-md-8">
+            <div class="pedigree-container"
+                 [class.pedigree-loading]="!pedigreeInitialized"
+                 [class.pedigree-active]="pedigreeInitialized">
+              
+              <!-- Show placeholder only when PedigreeJS is not initialized -->
+              <div *ngIf="!pedigreeInitialized" class="pedigree-placeholder">
+                <div class="text-center py-5">
+                  <i class="feather icon-sitemap" style="font-size: 4rem; color: #dee2e6;"></i>
+                  <h4 class="mt-3 text-muted">Inizializzazione PedigreeJS</h4>
+                  <p class="text-muted">
+                    Preparazione dell'editor pedigree in corso...
+                  </p>
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Caricamento...</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- PedigreeJS Containers (always rendered, but hidden when not initialized) -->
+              <div class="pedigree-content" [style.display]="pedigreeInitialized ? 'block' : 'none'">
+                <!-- PedigreeJS Buttons Container -->
+                <div id="pedigree-buttons" class="pedigree-buttons-container mb-3"></div>
+                
+                <!-- PedigreeJS Main Container -->
+                <div id="pedigree-container" class="pedigree-main-container"></div>
+                
+                <!-- PedigreeJS Node Properties Container - HIDDEN (now using sidebar) -->
+                <div id="node_properties" class="pedigree-properties-container mt-3" style="display: none;"></div>
               </div>
             </div>
           </div>
-          
-          <!-- PedigreeJS Containers (always rendered, but hidden when not initialized) -->
-          <div class="pedigree-content" [style.display]="pedigreeInitialized ? 'block' : 'none'">
-            <!-- PedigreeJS Buttons Container -->
-            <div id="pedigree-buttons" class="pedigree-buttons-container mb-3"></div>
-            
-            <!-- PedigreeJS Main Container -->
-            <div id="pedigree-container" class="pedigree-main-container"></div>
-            
-            <!-- PedigreeJS Node Properties Container - FIXED ID NAME -->
-            <div id="node_properties" class="pedigree-properties-container mt-3"></div>
+
+          <!-- Details Sidebar Column -->
+          <div class="col-lg-3 col-md-4">
+            <div class="person-details-sidebar">
+              <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                  <h6 class="mb-0">
+                    <i class="feather icon-user me-2"></i>
+                    Individual's Details
+                  </h6>
+                </div>
+                <div class="card-body">
+                  
+                  <!-- Stato vuoto: nessuna persona selezionata -->
+                  <div *ngIf="!mostraDettagliPersona" class="text-center text-muted py-5">
+                    <i class="feather icon-user-plus" style="font-size: 3rem; opacity: 0.3;"></i>
+                    <p class="mt-3 mb-0">Seleziona una persona dal pedigree</p>
+                    <small>per visualizzare e modificare i dettagli</small>
+                  </div>
+
+                  <!-- Dettagli persona selezionata -->
+                  <div *ngIf="mostraDettagliPersona && personaSelezionata" class="dettagli-persona">
+                    
+                    <!-- Header con nome e sesso -->
+                    <div class="mb-4">
+                      <div class="d-flex align-items-center">
+                        <!-- Avatar a sinistra -->
+                        <div class="persona-avatar me-3">
+                          <i class="feather icon-user" 
+                             [class.avatar-maschio]="personaSelezionata.sex === 'M'"
+                             [class.avatar-femmina]="personaSelezionata.sex === 'F'"></i>
+                        </div>
+                        
+                        <!-- Info persona a destra -->
+                        <div class="persona-info flex-grow-1">
+                          <h5 class="mb-1">{{ personaSelezionata.display_name || 'Senza nome' }}</h5>
+                          <div class="text-muted mb-1">
+                            {{ personaSelezionata.sex === 'M' ? 'Maschio' : (personaSelezionata.sex === 'F' ? 'Femmina' : 'Non specificato') }}
+                          </div>
+                          <small class="text-muted">
+                            <strong>ID:</strong> {{ personaSelezionata.name }}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Informazioni di base -->
+                    <div class="info-base mb-4">
+                      <h6 class="text-muted mb-3">
+                        <i class="feather icon-info me-2"></i>
+                        Informazioni di Base
+                      </h6>
+                      
+                      <div class="row g-3">
+                        <div class="col-6">
+                          <label class="form-label text-muted small">Età</label>
+                          <div class="fw-semibold">{{ personaSelezionata.age ? personaSelezionata.age + ' anni' : '-' }}</div>
+                        </div>
+                        
+                        <div class="col-6">
+                          <label class="form-label text-muted small">Anno di nascita</label>
+                          <div class="fw-semibold">{{ personaSelezionata.yob || '-' }}</div>
+                        </div>
+                        
+                        <div class="col-12">
+                          <label class="form-label text-muted small">Proband</label>
+                          <div class="fw-semibold">
+                            <span class="badge" 
+                                  [class.bg-primary]="personaSelezionata.proband"
+                                  [class.bg-light]="!personaSelezionata.proband"
+                                  [class.text-dark]="!personaSelezionata.proband">
+                              {{ personaSelezionata.proband ? 'Sì' : 'No' }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Stato Vitale -->
+                    <div class="stato-vitale mb-4">
+                      <h6 class="text-muted mb-3">
+                        <i class="feather icon-heart me-2"></i>
+                        Stato Vitale
+                      </h6>
+                      
+                      <div class="btn-group w-100" role="group">
+                        <button type="button" 
+                                class="btn btn-outline-success"
+                                [class.btn-success]="personaSelezionata.status === 0 || personaSelezionata.status === undefined"
+                                [class.text-white]="personaSelezionata.status === 0 || personaSelezionata.status === undefined">
+                          <i class="feather icon-check me-1" 
+                             *ngIf="personaSelezionata.status === 0 || personaSelezionata.status === undefined"></i>
+                          Vivo
+                        </button>
+                        <button type="button" 
+                                class="btn btn-outline-secondary"
+                                [class.btn-secondary]="personaSelezionata.status === 1"
+                                [class.text-white]="personaSelezionata.status === 1">
+                          <i class="feather icon-check me-1" 
+                             *ngIf="personaSelezionata.status === 1"></i>
+                          Deceduto
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Stato Adozione -->
+                    <div class="adoption-status mb-4">
+                      <h6 class="text-muted mb-3">
+                        <i class="feather icon-users me-2"></i>
+                        Stato Adozione
+                      </h6>
+                      
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   [checked]="personaSelezionata.adopted_in"
+                                   id="adopted_in">
+                            <label class="form-check-label small" for="adopted_in">
+                              Adottato
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   [checked]="personaSelezionata.adopted_out"
+                                   id="adopted_out">
+                            <label class="form-check-label small" for="adopted_out">
+                              Dato in adozione
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Storia Riproduttiva -->
+                    <div class="reproductive-history mb-4">
+                      <h6 class="text-muted mb-3">
+                        <i class="feather icon-heart me-2"></i>
+                        Storia Riproduttiva
+                      </h6>
+                      
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   [checked]="personaSelezionata.miscarriage"
+                                   id="miscarriage">
+                            <label class="form-check-label small" for="miscarriage">
+                              Aborto spontaneo
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   [checked]="personaSelezionata.stillbirth"
+                                   id="stillbirth">
+                            <label class="form-check-label small" for="stillbirth">
+                              Stillbirth
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   [checked]="personaSelezionata.termination"
+                                   id="termination">
+                            <label class="form-check-label small" for="termination">
+                              Interruzione gravidanza
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Diagnosi Patologie -->
+                    <div class="diagnosi-patologie">
+                      <h6 class="text-muted mb-3">
+                        <i class="feather icon-activity me-2"></i>
+                        Age of Diagnosis
+                      </h6>
+                      
+                      <div class="patologie-lista">
+                        <!-- Breast cancer -->
+                        <div class="patologia-item mb-3">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                              <div class="patologia-colore breast-cancer me-2"></div>
+                              <label class="form-label mb-0 small">Breast cancer</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm" 
+                                   style="width: 80px;" min="0" max="120"
+                                   [value]="personaSelezionata.breast_cancer_diagnosis_age || ''"
+                                   placeholder="Age">
+                          </div>
+                        </div>
+
+                        <!-- Ovarian cancer -->
+                        <div class="patologia-item mb-3">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                              <div class="patologia-colore ovarian-cancer me-2"></div>
+                              <label class="form-label mb-0 small">Ovarian cancer</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm" 
+                                   style="width: 80px;" min="0" max="120"
+                                   [value]="personaSelezionata.ovarian_cancer_diagnosis_age || ''"
+                                   placeholder="Age">
+                          </div>
+                        </div>
+
+                        <!-- Pancreatic cancer -->
+                        <div class="patologia-item mb-3">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                              <div class="patologia-colore pancreatic-cancer me-2"></div>
+                              <label class="form-label mb-0 small">Pancreatic cancer</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm" 
+                                   style="width: 80px;" min="0" max="120"
+                                   [value]="personaSelezionata.pancreatic_cancer_diagnosis_age || ''"
+                                   placeholder="Age">
+                          </div>
+                        </div>
+
+                        <!-- Prostate cancer -->
+                        <div class="patologia-item mb-3">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                              <div class="patologia-colore prostate-cancer me-2"></div>
+                              <label class="form-label mb-0 small">Prostate cancer</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm" 
+                                   style="width: 80px;" min="0" max="120"
+                                   [value]="personaSelezionata.prostate_cancer_diagnosis_age || ''"
+                                   placeholder="Age">
+                          </div>
+                        </div>
+
+                        <!-- Diabetes -->
+                        <div class="patologia-item mb-3">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                              <div class="patologia-colore diabetes me-2"></div>
+                              <label class="form-label mb-0 small">Diabetes</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm" 
+                                   style="width: 80px;" min="0" max="120"
+                                   [value]="personaSelezionata.diabetes_diagnosis_age || ''"
+                                   placeholder="Age">
+                          </div>
+                        </div>
+
+                        <!-- Heart disease -->
+                        <div class="patologia-item mb-3">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                              <div class="patologia-colore heart-disease me-2"></div>
+                              <label class="form-label mb-0 small">Heart disease</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm" 
+                                   style="width: 80px;" min="0" max="120"
+                                   [value]="personaSelezionata.heart_disease_diagnosis_age || ''"
+                                   placeholder="Age">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>

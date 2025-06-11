@@ -129,7 +129,187 @@
   &.pedigree-active {
     border: 1px solid #dee2e6;
   }
-  
+}
+
+// Person Details Sidebar
+.person-details-sidebar {
+  .card {
+    border: 2px solid #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    min-height: 600px;
+    
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 0.6rem 1rem; // Ridotto da default (0.75rem 1.25rem)
+      
+      h6 {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 0; // Rimuove margine extra
+      }
+    }
+    
+    .card-body {
+      background: #fafafa;
+      border-radius: 0 0 8px 8px;
+      
+      // Stili per i dettagli della persona selezionata
+      .dettagli-persona {
+        margin-top: 1rem; // Aumenta spazio dal pannello blu
+        .persona-avatar {
+          .feather {
+            font-size: 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            padding: 0.6rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: block;
+            
+            &.avatar-maschio {
+              color: #007bff;
+              border: 2px solid #007bff;
+            }
+            
+            &.avatar-femmina {
+              color: #dc3545;
+              border: 2px solid #dc3545;
+            }
+          }
+        }
+        
+        .persona-info {
+          h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #495057;
+          }
+          
+          .text-muted {
+            font-size: 0.85rem;
+          }
+          
+          small {
+            font-size: 0.75rem;
+            
+            strong {
+              font-weight: 600;
+            }
+          }
+        }
+        
+        .info-base, .stato-vitale, .reproduction, .diagnosi-patologie {
+          .form-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+          }
+          
+          .fw-semibold {
+            font-size: 0.9rem;
+            color: #495057;
+          }
+        }
+        
+        // Stili per i bottoni stato vitale
+        .stato-vitale {
+          .btn-group {
+            .btn {
+              font-size: 0.85rem;
+              padding: 0.5rem 1rem;
+              border-width: 2px;
+              
+              .feather {
+                font-size: 0.8rem;
+              }
+            }
+          }
+        }
+        
+        // Stili per reproduction checkboxes
+        .reproduction {
+          .form-check {
+            .form-check-input {
+              margin-top: 0.2rem;
+            }
+            
+            .form-check-label {
+              font-size: 0.8rem;
+              color: #6c757d;
+            }
+          }
+        }
+        
+        // Stili per le patologie
+        .diagnosi-patologie {
+          .patologie-lista {
+            .patologia-item {
+              padding: 0.5rem;
+              border-radius: 6px;
+              background: rgba(255, 255, 255, 0.5);
+              border: 1px solid #e9ecef;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.8);
+                border-color: #dee2e6;
+              }
+              
+              .patologia-colore {
+                width: 4px;
+                height: 20px;
+                border-radius: 2px;
+                
+                &.breast-cancer {
+                  background-color: #F68F35; // Arancione
+                }
+                
+                &.ovarian-cancer {
+                  background-color: #4DAA4D; // Verde
+                }
+                
+                &.pancreatic-cancer {
+                  background-color: #4289BA; // Blu
+                }
+                
+                &.prostate-cancer {
+                  background-color: #D5494A; // Rosso
+                }
+                
+                &.diabetes {
+                  background-color: #9B59B6; // Viola
+                }
+                
+                &.heart-disease {
+                  background-color: #E74C3C; // Rosso scuro
+                }
+              }
+              
+              .form-label {
+                font-size: 0.8rem;
+                color: #495057;
+                font-weight: 500;
+              }
+              
+              .form-control {
+                border: 1px solid #ced4da;
+                
+                &:focus {
+                  border-color: #667eea;
+                  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Pedigree specific styles
+.pedigree-container {
   .pedigree-placeholder {
     .spinner-border {
       width: 2rem;
@@ -352,5 +532,28 @@
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+// Responsive Design for Sidebar
+@media (max-width: 991px) {
+  .person-details-sidebar {
+    margin-top: 2rem;
+    
+    .card {
+      min-height: 400px;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .person-details-sidebar {
+    .card {
+      min-height: 300px;
+      
+      .card-body {
+        padding: 1rem;
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, HostListener, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SharedModule } from 'src/app/theme/shared/shared.module';
 import { PedigreeService } from 'src/app/services/pedigree.service';
@@ -51,6 +51,10 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
   pedigreeInitialized: boolean = false;
   pedigreeOptions: any = null;
   
+  // Gestione persona selezionata nel pannello laterale
+  personaSelezionata: any = null;
+  mostraDettagliPersona: boolean = false;
+  
   // Track when pedigree was loaded to avoid immediate false positives
   private pedigreeLoadedAt: number = 0;
   
@@ -72,7 +76,8 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     private router: Router,
     private pedigreeService: PedigreeService,
     private patientService: PatientService,
-    private authService: AuthService
+    private authService: AuthService,
+    private changeDetectorRef: ChangeDetectorRef
   ) { }
 
   /**
@@ -207,6 +212,23 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
     
     // Destroy PedigreeJS instance
     this.destroyPedigreeJS();
+  }
+
+  /**
+   * Gestisce la selezione di un nodo nel pedigree
+   * Popola il pannello laterale con i dati della persona selezionata
+   * @param nodoSelezionato - I dati del nodo selezionato da PedigreeJS
+   */
+  onSelezioneNodo = (nodoSelezionato: any): void => {
+    console.log('Nodo selezionato:', nodoSelezionato);
+    
+    // Aggiorna lo stato della persona selezionata
+    this.personaSelezionata = nodoSelezionato;
+    this.mostraDettagliPersona = true;
+    
+    // Forza il rilevamento delle modifiche di Angular
+    // Necessario perché la callback viene chiamata da codice JavaScript esterno
+    this.changeDetectorRef.detectChanges();
   }
 
   /**
@@ -516,6 +538,7 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
       this.pedigreeOptions = {
         'targetDiv': 'pedigree-container',
         'btn_target': 'pedigree-buttons', // ← FIX: Usa ID statico che corrisponde al template
+        'nodeclick': this.onSelezioneNodo, // ← Intercetta il click sui nodi per il pannello laterale
         'width': 800,
         'height': 600,
         'symbol_size': 35,
