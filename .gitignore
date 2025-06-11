@@ -33,3 +33,10 @@ ehthumbs.db
 *.orig
 *.rej
 *.bak
+
+# === Log Files ===
+logs/
+*.log.*
+*.gz
+**/logs/**
+back-end/crud/logs/
