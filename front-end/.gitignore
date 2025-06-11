@@ -1,0 +1,52 @@
+# === Eclipse ===
+.metadata/
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+*.class
+*.prefs
+*.launch
+*.ser
+*.iml
+.settings/
+.project
+.classpath
+
+# === Visual Studio ===
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+bin/
+obj/
+
+# === Maven ===
+target/
+
+# === Node / Angular ===
+node_modules/
+dist/
+.angular/
+
+# === OS / editor ===
+Thumbs.db
+ehthumbs.db
+*.sublime-workspace
+*.sublime-project
+
+# === Backup ===
+*.orig
+*.rej
+*.bak
+
+# === Log Files ===
+logs/
+*.log.*
+*.gz
+**/logs/**
+back-end/crud/logs/ 
