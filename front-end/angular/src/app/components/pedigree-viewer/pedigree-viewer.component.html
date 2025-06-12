@@ -644,19 +644,15 @@
                         </div>
                         
                         <!-- ID sotto -->
-                        <small class="text-muted">
-                          <strong>ID:</strong> {{ personaSelezionata.name }}
-                        </small>
+                        <div class="text-muted" style="font-size: 0.95rem;">
+                          <strong style="font-size: 1rem;">ID:</strong> 
+                          <span style="font-size: 1rem; font-weight: 500;">{{ personaSelezionata.name }}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <!-- Informazioni di base -->
+                    <!-- Informazioni di base (senza header) -->
                     <div class="info-base mb-4">
-                      <h6 class="text-muted mb-3">
-                        <i class="feather icon-info me-2"></i>
-                        Informazioni di Base
-                      </h6>
-                      
                       <div class="row g-3">
                         <div class="col-6">
                           <label class="form-label text-muted small">Età</label>
