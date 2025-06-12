@@ -55,6 +55,12 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
   personaSelezionata: any = null;
   mostraDettagliPersona: boolean = false;
   
+  // Gestione errori anno di nascita
+  yobErrorMessage: string = '';
+  
+  // Gestione errori età di diagnosi
+  diagnosisAgeErrors: { [key: string]: string } = {};
+  
   // Track when pedigree was loaded to avoid immediate false positives
   private pedigreeLoadedAt: number = 0;
   
@@ -221,6 +227,10 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
    */
   onSelezioneNodo = (nodoSelezionato: any): void => {
     console.log('Nodo selezionato:', nodoSelezionato);
+    
+    // Reset dei messaggi di errore quando si seleziona una nuova persona
+    this.yobErrorMessage = '';
+    this.diagnosisAgeErrors = {};
     
     // Aggiorna lo stato della persona selezionata
     this.personaSelezionata = nodoSelezionato;
@@ -473,6 +483,509 @@ export class PedigreeViewerComponent implements OnInit, OnDestroy, AfterViewInit
 
     // Altrimenti controlla se ha partner o figli
     return !this.hasPartnerOrChildren(this.personaSelezionata);
+  }
+
+  /**
+   * Gestisce l'evento blur/enter sull'input dell'anno di nascita
+   * @param event - L'evento DOM
+   */
+  onYobBlur(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.onYobChanged(target.value);
+    }
+  }
+
+  /**
+   * Gestisce la modifica dell'anno di nascita quando l'utente finisce di editare
+   * Calcola automaticamente l'età e aggiorna PedigreeJS SOLO se la validazione passa
+   * @param nuovoYob - Il nuovo anno di nascita (come stringa dall'input)
+   */
+  onYobChanged(nuovoYob: string | number): void {
+    if (!this.personaSelezionata) {
+      return;
+    }
+
+    // Reset del messaggio di errore
+    this.yobErrorMessage = '';
+
+    // Converte la stringa in numero se necessario
+    const yobNumber = typeof nuovoYob === 'string' ? parseInt(nuovoYob, 10) : nuovoYob;
+    
+    // Se il valore è NaN o vuoto, trattalo come null
+    const finalYob = isNaN(yobNumber) ? null : yobNumber;
+
+    // ✅ VALIDAZIONE PRIMA DI PASSARE A PEDIGREEJS
+    // Valida l'anno di nascita PRIMA di fare qualsiasi operazione
+    if (finalYob !== null) {
+      const validationResult = this.validateYearOfBirth(finalYob);
+      if (!validationResult.isValid) {
+        // ❌ VALIDAZIONE FALLITA - Non passare nulla a PedigreeJS
+        console.log('Validazione fallita per anno:', finalYob, validationResult.message);
+        
+        // Mostra messaggio di errore elegante
+        this.yobErrorMessage = validationResult.message;
+        
+        // Reset del campo a vuoto dopo un breve delay
+        setTimeout(() => {
+          this.personaSelezionata.yob = null;
+          this.changeDetectorRef.detectChanges();
+        }, 100);
+        
+        // Nascondi il messaggio di errore dopo 4 secondi
+        setTimeout(() => {
+          this.yobErrorMessage = '';
+          this.changeDetectorRef.detectChanges();
+        }, 4000);
+        
+        // ⚠️ IMPORTANTE: Esci qui senza passare nulla a PedigreeJS
+        return;
+      }
+    }
+
+    // ✅ VALIDAZIONE PASSATA - Procedi con l'aggiornamento
+    console.log('Validazione passata per anno:', finalYob);
+
+    // Calcola automaticamente l'età dal nuovo anno di nascita
+    const newAge = finalYob ? this.calculateAgeFromYob(finalYob) : null;
+    
+    // Aggiorna sia yob che age nella persona selezionata (solo nel pannello)
+    this.personaSelezionata.yob = finalYob;
+    this.personaSelezionata.age = newAge;
+
+    // ✅ ORA sincronizza con PedigreeJS (solo se la validazione è passata)
+    this.onCampoModificato('yob', finalYob);
+    
+    // ✅ FIX: Aggiorna SEMPRE l'età in PedigreeJS, anche quando è null (per resettarla)
+    // Questo assicura che quando l'anno viene cancellato, anche l'età viene resettata
+    this.onCampoModificato('age', newAge);
+  }
+
+  /**
+   * Valida l'anno di nascita con controlli dinamici
+   * @param yob - Anno di nascita da validare
+   * @returns Oggetto con risultato della validazione e messaggio
+   */
+  private validateYearOfBirth(yob: number): { isValid: boolean; message: string } {
+    // Se il valore è vuoto/null, è valido (permette cancellazione)
+    if (!yob || yob === null || yob === undefined) {
+      return { isValid: true, message: '' };
+    }
+
+    // Ottieni l'anno corrente dinamicamente
+    const currentYear = new Date().getFullYear();
+    const minYear = 1900;
+
+    // Controlla se l'anno è troppo vecchio
+    if (yob < minYear) {
+      return { 
+        isValid: false, 
+        message: `L'anno deve essere maggiore o uguale a ${minYear}` 
+      };
+    }
+
+    // Controlla se l'anno è nel futuro
+    if (yob > currentYear) {
+      return { 
+        isValid: false, 
+        message: `L'anno non può essere maggiore di ${currentYear}` 
+      };
+    }
+
+    // Controlla se l'età risultante è ragionevole (max 150 anni)
+    const age = currentYear - yob;
+    if (age > 150) {
+      return { 
+        isValid: false, 
+        message: `L'età risultante (${age} anni) non è ragionevole` 
+      };
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  /**
+   * Calcola l'età attuale dall'anno di nascita
+   * @param yob - Anno di nascita
+   * @returns Età calcolata o null se non valido
+   */
+  private calculateAgeFromYob(yob: number): number | null {
+    if (!yob || yob < 1900) {
+      return null;
+    }
+
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - yob;
+
+    // Verifica che l'età sia ragionevole
+    if (age < 0 || age > 150) {
+      return null;
+    }
+
+    return age;
+  }
+
+  /**
+   * Ottiene l'età calcolata per la visualizzazione nel template
+   * @param yob - Anno di nascita
+   * @returns Stringa formattata dell'età o placeholder
+   */
+  getCalculatedAge(yob: number): string {
+    if (!yob) {
+      return '-';
+    }
+
+    const age = this.calculateAgeFromYob(yob);
+    return age !== null ? `${age} anni` : '-';
+  }
+
+  /**
+   * Ottiene l'anno corrente per il limite massimo dell'input
+   * @returns Anno corrente
+   */
+  getCurrentYear(): number {
+    return new Date().getFullYear();
+  }
+
+  /**
+   * Gestisce il cambio dello stato vitale (Vivo/Deceduto)
+   * @param nuovoStatus - 0 = Vivo, 1 = Deceduto
+   */
+  onStatoVitaleChanged(nuovoStatus: number): void {
+    if (!this.personaSelezionata) {
+      return;
+    }
+
+    console.log('Cambio stato vitale:', nuovoStatus === 0 ? 'Vivo' : 'Deceduto');
+
+    // Aggiorna lo stato nella persona selezionata
+    this.personaSelezionata.status = nuovoStatus;
+
+    // Sincronizza con PedigreeJS
+    this.onCampoModificato('status', nuovoStatus);
+  }
+
+  /**
+   * Gestisce il cambio dello stato di adozione con validazione mutualmente esclusiva
+   * @param campo - 'adopted_in' o 'adopted_out'
+   * @param event - Evento del checkbox
+   */
+  onAdoptionStatusChanged(campo: 'adopted_in' | 'adopted_out', event: Event): void {
+    if (!this.personaSelezionata) {
+      return;
+    }
+
+    const target = event.target as HTMLInputElement;
+    const isChecked = target.checked;
+
+    console.log(`Cambio stato adozione ${campo}:`, isChecked);
+
+    // ✅ VALIDAZIONE: Gli stati di adozione sono mutuamente esclusivi
+    if (isChecked) {
+      // Se stiamo selezionando un campo, deseleziona automaticamente l'altro
+      const campoOpposto = campo === 'adopted_in' ? 'adopted_out' : 'adopted_in';
+      
+      if (this.personaSelezionata[campoOpposto]) {
+        console.log(`Deselezionando automaticamente ${campoOpposto} perché ${campo} è stato selezionato`);
+        
+        // Rimuovi l'altro campo dalla persona selezionata
+        delete this.personaSelezionata[campoOpposto];
+        
+        // Sincronizza la rimozione con PedigreeJS
+        this.onCampoModificato(campoOpposto, undefined);
+        
+        // Forza l'aggiornamento della UI per riflettere il cambiamento
+        this.changeDetectorRef.detectChanges();
+      }
+      
+      // Imposta il campo corrente
+      this.personaSelezionata[campo] = true;
+      this.onCampoModificato(campo, true);
+    } else {
+      // Se stiamo deselezionando, rimuovi semplicemente il campo
+      delete this.personaSelezionata[campo];
+      this.onCampoModificato(campo, undefined);
+    }
+  }
+
+  /**
+   * Verifica se la persona può avere una storia riproduttiva
+   * Solo le femmine possono avere aborti spontanei, stillbirth e interruzioni di gravidanza
+   * @returns true se la persona può avere eventi riproduttivi
+   */
+  canHaveReproductiveHistory(): boolean {
+    if (!this.personaSelezionata) {
+      return false;
+    }
+
+    // Solo le femmine possono avere eventi riproduttivi
+    return this.personaSelezionata.sex === 'F';
+  }
+
+  /**
+   * Gestisce il cambio della storia riproduttiva con validazioni
+   * @param campo - 'miscarriage', 'stillbirth' o 'termination'
+   * @param event - Evento del checkbox
+   */
+  onReproductiveHistoryChanged(campo: 'miscarriage' | 'stillbirth' | 'termination', event: Event): void {
+    if (!this.personaSelezionata) {
+      return;
+    }
+
+    const target = event.target as HTMLInputElement;
+    const isChecked = target.checked;
+
+    console.log(`Cambio storia riproduttiva ${campo}:`, isChecked);
+
+    // ✅ VALIDAZIONE PRIMA DI PASSARE A PEDIGREEJS
+    if (isChecked) {
+      const validationResult = this.validateReproductiveHistory(campo);
+      if (!validationResult.isValid) {
+        // ❌ VALIDAZIONE FALLITA - Non passare nulla a PedigreeJS
+        console.log('Validazione fallita per storia riproduttiva:', campo, validationResult.message);
+        
+        // Mostra messaggio di errore (puoi personalizzare questo)
+        alert(validationResult.message);
+        
+        // Reset del checkbox
+        setTimeout(() => {
+          target.checked = false;
+          this.changeDetectorRef.detectChanges();
+        }, 0);
+        
+        return;
+      }
+    }
+
+    // ✅ VALIDAZIONE PASSATA - Procedi con l'aggiornamento
+    console.log('Validazione passata per storia riproduttiva:', campo);
+
+    // Aggiorna lo stato nella persona selezionata
+    if (isChecked) {
+      this.personaSelezionata[campo] = true;
+    } else {
+      delete this.personaSelezionata[campo];
+    }
+
+    // ✅ ORA sincronizza con PedigreeJS (solo se la validazione è passata)
+    this.onCampoModificato(campo, isChecked ? true : undefined);
+  }
+
+  /**
+   * Valida se è possibile impostare un evento di storia riproduttiva
+   * @param campo - Il campo da validare
+   * @returns Oggetto con risultato della validazione e messaggio
+   */
+  private validateReproductiveHistory(campo: 'miscarriage' | 'stillbirth' | 'termination'): { isValid: boolean; message: string } {
+    if (!this.personaSelezionata) {
+      return { isValid: false, message: 'Nessuna persona selezionata' };
+    }
+
+    // ✅ UNICA VALIDAZIONE: Solo femmine possono avere eventi riproduttivi
+    if (this.personaSelezionata.sex !== 'F') {
+      const eventNames = {
+        'miscarriage': 'aborto spontaneo',
+        'stillbirth': 'stillbirth (nato morto)',
+        'termination': 'interruzione di gravidanza'
+      };
+      
+      return { 
+        isValid: false, 
+        message: `Solo le persone di sesso femminile possono avere eventi di ${eventNames[campo]}.` 
+      };
+    }
+
+    // ❌ VALIDAZIONE ETÀ RIMOSSA
+    // Possono esistere casi estremi (gravidanze precoci o tardive)
+    // I medici sanno meglio quando inserire dati clinici reali
+
+    // ❌ VALIDAZIONE STATO VITALE RIMOSSA
+    // I medici sanno meglio quando inserire dati storici anche per persone decedute
+    // Non implementiamo restrizioni per status = 1 (deceduto)
+
+    return { isValid: true, message: '' };
+  }
+
+  /**
+   * Verifica se la persona può avere cancro ovarico (solo femmine)
+   * @returns true se la persona può avere cancro ovarico
+   */
+  canHaveOvarianCancer(): boolean {
+    if (!this.personaSelezionata) {
+      return false;
+    }
+    return this.personaSelezionata.sex === 'F';
+  }
+
+  /**
+   * Verifica se la persona può avere cancro alla prostata (solo maschi)
+   * @returns true se la persona può avere cancro alla prostata
+   */
+  canHaveProstateCancer(): boolean {
+    if (!this.personaSelezionata) {
+      return false;
+    }
+    return this.personaSelezionata.sex === 'M';
+  }
+
+  /**
+   * Gestisce il cambio dell'età di diagnosi per le patologie
+   * @param campo - Nome del campo (es. 'breast_cancer_diagnosis_age')
+   * @param event - Evento dell'input
+   */
+  onDiagnosisAgeChanged(campo: string, event: Event): void {
+    if (!this.personaSelezionata) {
+      return;
+    }
+
+    const target = event.target as HTMLInputElement;
+    const ageValue = target.value.trim();
+
+    // Reset dell'errore per questo campo
+    delete this.diagnosisAgeErrors[campo];
+
+    // Se il campo è vuoto, rimuovi il valore
+    if (ageValue === '') {
+      delete this.personaSelezionata[campo];
+      this.onCampoModificato(campo, undefined);
+      return;
+    }
+
+    const age = parseInt(ageValue, 10);
+
+    // ✅ VALIDAZIONE PRIMA DI PASSARE A PEDIGREEJS
+    if (!isNaN(age)) {
+      const validationResult = this.validateDiagnosisAge(campo, age);
+      if (!validationResult.isValid) {
+        // ❌ VALIDAZIONE FALLITA - Mostra errore ma mantieni il valore
+        console.log('Validazione fallita per età diagnosi:', campo, age, validationResult.message);
+        this.diagnosisAgeErrors[campo] = validationResult.message;
+        
+        // Aggiorna comunque il pannello (ma con errore visibile)
+        this.personaSelezionata[campo] = age;
+        
+        // NON passare a PedigreeJS se c'è un errore
+        return;
+      }
+    }
+
+    // ✅ VALIDAZIONE PASSATA - Procedi con l'aggiornamento
+    console.log('Validazione passata per età diagnosi:', campo, age);
+
+    // Aggiorna il pannello
+    this.personaSelezionata[campo] = age;
+
+    // ✅ ORA sincronizza con PedigreeJS (solo se la validazione è passata)
+    this.onCampoModificato(campo, age);
+  }
+
+  /**
+   * Valida l'età di diagnosi per una patologia
+   * @param campo - Nome del campo
+   * @param age - Età di diagnosi
+   * @returns Oggetto con risultato della validazione e messaggio
+   */
+  private validateDiagnosisAge(campo: string, age: number): { isValid: boolean; message: string } {
+    if (!this.personaSelezionata) {
+      return { isValid: false, message: 'Nessuna persona selezionata' };
+    }
+
+    // Controllo range base (0-150)
+    if (age < 0 || age > 150) {
+      return { 
+        isValid: false, 
+        message: `L'età di diagnosi deve essere tra 0 e 150 anni` 
+      };
+    }
+
+    // Controllo sesso per patologie specifiche
+    if (campo === 'ovarian_cancer_diagnosis_age' && this.personaSelezionata.sex !== 'F') {
+      return { 
+        isValid: false, 
+        message: 'Il cancro ovarico può colpire solo persone di sesso femminile' 
+      };
+    }
+
+    if (campo === 'prostate_cancer_diagnosis_age' && this.personaSelezionata.sex !== 'M') {
+      return { 
+        isValid: false, 
+        message: 'Il cancro alla prostata può colpire solo persone di sesso maschile' 
+      };
+    }
+
+    // Controllo età attuale della persona
+    const currentAge = this.personaSelezionata.age;
+    if (currentAge !== null && currentAge !== undefined) {
+      if (age > currentAge) {
+        return { 
+          isValid: false, 
+          message: `L'età di diagnosi (${age}) non può essere maggiore dell'età attuale (${currentAge})` 
+        };
+      }
+    } else {
+      // Persona senza età definita
+      return { 
+        isValid: false, 
+        message: 'Età della persona non definita. Inserire prima l\'anno di nascita.' 
+      };
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  /**
+   * Ottiene il messaggio di errore per un campo di diagnosi
+   * @param campo - Nome del campo
+   * @returns Messaggio di errore o null
+   */
+  getDiagnosisAgeError(campo: string): string | null {
+    return this.diagnosisAgeErrors[campo] || null;
+  }
+
+  /**
+   * Ottiene l'etichetta breve per l'errore di diagnosi (stile CanRisk)
+   * @param campo - Nome del campo
+   * @returns Etichetta breve per l'errore
+   */
+  getDiagnosisAgeErrorLabel(campo: string): string {
+    const error = this.diagnosisAgeErrors[campo];
+    if (!error) return '';
+
+    // Stile CanRisk: etichette brevi
+    if (error.includes('maggiore dell\'età attuale')) {
+      return '>AGE';
+    }
+    if (error.includes('Età della persona non definita')) {
+      return 'NO AGE';
+    }
+    if (error.includes('sesso femminile')) {
+      return 'F ONLY';
+    }
+    if (error.includes('sesso maschile')) {
+      return 'M ONLY';
+    }
+    
+    return 'ERROR';
+  }
+
+  /**
+   * Rimuove completamente una diagnosi (imposta il campo come undefined)
+   * Questo distingue chiaramente tra "nessuna malattia" (undefined) e "dalla nascita" (0)
+   * @param campo - Il campo di diagnosi da rimuovere
+   */
+  clearDiagnosis(campo: string): void {
+    if (!this.personaSelezionata) return;
+    
+    // Rimuovi il campo completamente dal dataset
+    delete this.personaSelezionata[campo];
+    
+    // Rimuovi eventuali errori di validazione
+    delete this.diagnosisAgeErrors[campo];
+    
+    // Notifica il cambiamento a PedigreeJS
+    this.onCampoModificato(campo, undefined);
+    
+    console.log(`Cleared diagnosis field: ${campo}`);
   }
 
   /**

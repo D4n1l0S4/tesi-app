@@ -656,12 +656,30 @@
                       <div class="row g-3">
                         <div class="col-6">
                           <label class="form-label text-muted small">Età</label>
-                          <div class="fw-semibold">{{ personaSelezionata.age ? personaSelezionata.age + ' anni' : '-' }}</div>
+                          <div class="fw-semibold text-muted">{{ getCalculatedAge(personaSelezionata.yob) }}</div>
                         </div>
                         
                         <div class="col-6">
                           <label class="form-label text-muted small">Anno di nascita</label>
-                          <div class="fw-semibold">{{ personaSelezionata.yob || '-' }}</div>
+                          <input type="number" 
+                                 class="form-control form-control-sm"
+                                 [class.is-invalid]="yobErrorMessage"
+                                 [(ngModel)]="personaSelezionata.yob"
+                                 (blur)="onYobBlur($event)"
+                                 (keyup.enter)="onYobBlur($event)"
+                                 placeholder="Anno"
+                                 min="1900" 
+                                 [max]="getCurrentYear()"
+                                 [title]="'Anno di nascita (1900 - ' + getCurrentYear() + ')'"
+                                 style="font-size: 0.9rem;">
+                          
+                          <!-- Messaggio di errore elegante -->
+                          <div *ngIf="yobErrorMessage" 
+                               class="invalid-feedback d-block mt-1 animate__animated animate__fadeIn"
+                               style="font-size: 0.8rem;">
+                            <i class="feather icon-alert-triangle me-1"></i>
+                            {{ yobErrorMessage }}
+                          </div>
                         </div>
                         
                         <div class="col-12">
@@ -689,7 +707,8 @@
                         <button type="button" 
                                 class="btn btn-outline-success"
                                 [class.btn-success]="personaSelezionata.status === 0 || personaSelezionata.status === undefined"
-                                [class.text-white]="personaSelezionata.status === 0 || personaSelezionata.status === undefined">
+                                [class.text-white]="personaSelezionata.status === 0 || personaSelezionata.status === undefined"
+                                (click)="onStatoVitaleChanged(0)">
                           <i class="feather icon-check me-1" 
                              *ngIf="personaSelezionata.status === 0 || personaSelezionata.status === undefined"></i>
                           Vivo
@@ -697,7 +716,8 @@
                         <button type="button" 
                                 class="btn btn-outline-secondary"
                                 [class.btn-secondary]="personaSelezionata.status === 1"
-                                [class.text-white]="personaSelezionata.status === 1">
+                                [class.text-white]="personaSelezionata.status === 1"
+                                (click)="onStatoVitaleChanged(1)">
                           <i class="feather icon-check me-1" 
                              *ngIf="personaSelezionata.status === 1"></i>
                           Deceduto
@@ -717,6 +737,7 @@
                           <div class="form-check">
                             <input class="form-check-input" type="checkbox" 
                                    [checked]="personaSelezionata.adopted_in"
+                                   (change)="onAdoptionStatusChanged('adopted_in', $event)"
                                    id="adopted_in">
                             <label class="form-check-label small" for="adopted_in">
                               Adottato
@@ -727,6 +748,7 @@
                           <div class="form-check">
                             <input class="form-check-input" type="checkbox" 
                                    [checked]="personaSelezionata.adopted_out"
+                                   (change)="onAdoptionStatusChanged('adopted_out', $event)"
                                    id="adopted_out">
                             <label class="form-check-label small" for="adopted_out">
                               Dato in adozione
@@ -748,8 +770,12 @@
                           <div class="form-check">
                             <input class="form-check-input" type="checkbox" 
                                    [checked]="personaSelezionata.miscarriage"
+                                   [disabled]="!canHaveReproductiveHistory()"
+                                   (change)="onReproductiveHistoryChanged('miscarriage', $event)"
                                    id="miscarriage">
-                            <label class="form-check-label small" for="miscarriage">
+                            <label class="form-check-label small" 
+                                   [class.text-muted]="!canHaveReproductiveHistory()"
+                                   for="miscarriage">
                               Aborto spontaneo
                             </label>
                           </div>
@@ -758,8 +784,12 @@
                           <div class="form-check">
                             <input class="form-check-input" type="checkbox" 
                                    [checked]="personaSelezionata.stillbirth"
+                                   [disabled]="!canHaveReproductiveHistory()"
+                                   (change)="onReproductiveHistoryChanged('stillbirth', $event)"
                                    id="stillbirth">
-                            <label class="form-check-label small" for="stillbirth">
+                            <label class="form-check-label small" 
+                                   [class.text-muted]="!canHaveReproductiveHistory()"
+                                   for="stillbirth">
                               Stillbirth
                             </label>
                           </div>
@@ -768,8 +798,12 @@
                           <div class="form-check">
                             <input class="form-check-input" type="checkbox" 
                                    [checked]="personaSelezionata.termination"
+                                   [disabled]="!canHaveReproductiveHistory()"
+                                   (change)="onReproductiveHistoryChanged('termination', $event)"
                                    id="termination">
-                            <label class="form-check-label small" for="termination">
+                            <label class="form-check-label small" 
+                                   [class.text-muted]="!canHaveReproductiveHistory()"
+                                   for="termination">
                               Interruzione gravidanza
                             </label>
                           </div>
@@ -781,7 +815,7 @@
                     <div class="diagnosi-patologie">
                       <h6 class="text-muted mb-3">
                         <i class="feather icon-activity me-2"></i>
-                        Age of Diagnosis
+                        Età diagnosi malattie
                       </h6>
                       
                       <div class="patologie-lista">
@@ -792,24 +826,70 @@
                               <div class="patologia-colore breast-cancer me-2"></div>
                               <label class="form-label mb-0 small">Breast cancer</label>
                             </div>
-                            <input type="number" class="form-control form-control-sm" 
-                                   style="width: 80px;" min="0" max="120"
-                                   [value]="personaSelezionata.breast_cancer_diagnosis_age || ''"
-                                   placeholder="Age">
+                            <div class="d-flex align-items-center">
+                              <input type="number" class="form-control form-control-sm" 
+                                     style="width: 80px;" min="0" max="120"
+                                     [value]="personaSelezionata.breast_cancer_diagnosis_age || ''"
+                                     (blur)="onDiagnosisAgeChanged('breast_cancer_diagnosis_age', $event)"
+                                     (keyup.enter)="onDiagnosisAgeChanged('breast_cancer_diagnosis_age', $event)"
+                                     placeholder="Age"
+                                     title="0 = dalla nascita, vuoto = nessuna malattia">
+                              <button *ngIf="personaSelezionata.breast_cancer_diagnosis_age !== null && personaSelezionata.breast_cancer_diagnosis_age !== undefined"
+                                      type="button" 
+                                      class="btn btn-sm btn-outline-secondary ms-1 p-1"
+                                      style="width: 24px; height: 24px; font-size: 12px; line-height: 1;"
+                                      (click)="clearDiagnosis('breast_cancer_diagnosis_age')"
+                                      title="Rimuovi malattia">
+                                ×
+                              </button>
+                              <span *ngIf="getDiagnosisAgeError('breast_cancer_diagnosis_age')" 
+                                    class="ms-2 text-danger small d-flex align-items-center"
+                                    [title]="getDiagnosisAgeError('breast_cancer_diagnosis_age')"
+                                    style="white-space: nowrap;">
+                                <i class="feather icon-alert-triangle me-1"></i>
+                                <span>{{ getDiagnosisAgeErrorLabel('breast_cancer_diagnosis_age') }}</span>
+                              </span>
+                            </div>
                           </div>
                         </div>
 
                         <!-- Ovarian cancer -->
-                        <div class="patologia-item mb-3">
+                        <div class="patologia-item mb-3" 
+                             [class.opacity-50]="!canHaveOvarianCancer()"
+                             [title]="!canHaveOvarianCancer() ? 'Solo per persone di sesso femminile' : ''">
                           <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                               <div class="patologia-colore ovarian-cancer me-2"></div>
-                              <label class="form-label mb-0 small">Ovarian cancer</label>
+                              <label class="form-label mb-0 small" 
+                                     [class.text-muted]="!canHaveOvarianCancer()">
+                                Ovarian cancer
+                              </label>
                             </div>
-                            <input type="number" class="form-control form-control-sm" 
-                                   style="width: 80px;" min="0" max="120"
-                                   [value]="personaSelezionata.ovarian_cancer_diagnosis_age || ''"
-                                   placeholder="Age">
+                            <div class="d-flex align-items-center">
+                              <input type="number" class="form-control form-control-sm" 
+                                     style="width: 80px;" min="0" max="120"
+                                     [value]="personaSelezionata.ovarian_cancer_diagnosis_age || ''"
+                                     [disabled]="!canHaveOvarianCancer()"
+                                     (blur)="onDiagnosisAgeChanged('ovarian_cancer_diagnosis_age', $event)"
+                                     (keyup.enter)="onDiagnosisAgeChanged('ovarian_cancer_diagnosis_age', $event)"
+                                     placeholder="Age"
+                                     title="0 = dalla nascita, vuoto = nessuna malattia">
+                              <button *ngIf="personaSelezionata.ovarian_cancer_diagnosis_age !== null && personaSelezionata.ovarian_cancer_diagnosis_age !== undefined && canHaveOvarianCancer()"
+                                      type="button" 
+                                      class="btn btn-sm btn-outline-secondary ms-1 p-1"
+                                      style="width: 24px; height: 24px; font-size: 12px; line-height: 1;"
+                                      (click)="clearDiagnosis('ovarian_cancer_diagnosis_age')"
+                                      title="Rimuovi malattia (nessuna diagnosi)">
+                                ×
+                              </button>
+                              <span *ngIf="getDiagnosisAgeError('ovarian_cancer_diagnosis_age')" 
+                                    class="ms-2 text-danger small d-flex align-items-center"
+                                    [title]="getDiagnosisAgeError('ovarian_cancer_diagnosis_age')"
+                                    style="white-space: nowrap;">
+                                <i class="feather icon-alert-triangle me-1"></i>
+                                <span>{{ getDiagnosisAgeErrorLabel('ovarian_cancer_diagnosis_age') }}</span>
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -820,24 +900,70 @@
                               <div class="patologia-colore pancreatic-cancer me-2"></div>
                               <label class="form-label mb-0 small">Pancreatic cancer</label>
                             </div>
-                            <input type="number" class="form-control form-control-sm" 
-                                   style="width: 80px;" min="0" max="120"
-                                   [value]="personaSelezionata.pancreatic_cancer_diagnosis_age || ''"
-                                   placeholder="Age">
+                            <div class="d-flex align-items-center">
+                              <input type="number" class="form-control form-control-sm" 
+                                     style="width: 80px;" min="0" max="120"
+                                     [value]="personaSelezionata.pancreatic_cancer_diagnosis_age || ''"
+                                     (blur)="onDiagnosisAgeChanged('pancreatic_cancer_diagnosis_age', $event)"
+                                     (keyup.enter)="onDiagnosisAgeChanged('pancreatic_cancer_diagnosis_age', $event)"
+                                     placeholder="Age"
+                                     title="0 = dalla nascita, vuoto = nessuna malattia">
+                              <button *ngIf="personaSelezionata.pancreatic_cancer_diagnosis_age !== null && personaSelezionata.pancreatic_cancer_diagnosis_age !== undefined"
+                                      type="button" 
+                                      class="btn btn-sm btn-outline-secondary ms-1 p-1"
+                                      style="width: 24px; height: 24px; font-size: 12px; line-height: 1;"
+                                      (click)="clearDiagnosis('pancreatic_cancer_diagnosis_age')"
+                                      title="Rimuovi malattia (nessuna diagnosi)">
+                                ×
+                              </button>
+                              <span *ngIf="getDiagnosisAgeError('pancreatic_cancer_diagnosis_age')" 
+                                    class="ms-2 text-danger small d-flex align-items-center"
+                                    [title]="getDiagnosisAgeError('pancreatic_cancer_diagnosis_age')"
+                                    style="white-space: nowrap;">
+                                <i class="feather icon-alert-triangle me-1"></i>
+                                <span>{{ getDiagnosisAgeErrorLabel('pancreatic_cancer_diagnosis_age') }}</span>
+                              </span>
+                            </div>
                           </div>
                         </div>
 
                         <!-- Prostate cancer -->
-                        <div class="patologia-item mb-3">
+                        <div class="patologia-item mb-3" 
+                             [class.opacity-50]="!canHaveProstateCancer()"
+                             [title]="!canHaveProstateCancer() ? 'Solo per persone di sesso maschile' : ''">
                           <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                               <div class="patologia-colore prostate-cancer me-2"></div>
-                              <label class="form-label mb-0 small">Prostate cancer</label>
+                              <label class="form-label mb-0 small" 
+                                     [class.text-muted]="!canHaveProstateCancer()">
+                                Prostate cancer
+                              </label>
                             </div>
-                            <input type="number" class="form-control form-control-sm" 
-                                   style="width: 80px;" min="0" max="120"
-                                   [value]="personaSelezionata.prostate_cancer_diagnosis_age || ''"
-                                   placeholder="Age">
+                            <div class="d-flex align-items-center">
+                              <input type="number" class="form-control form-control-sm" 
+                                     style="width: 80px;" min="0" max="120"
+                                     [value]="personaSelezionata.prostate_cancer_diagnosis_age || ''"
+                                     [disabled]="!canHaveProstateCancer()"
+                                     (blur)="onDiagnosisAgeChanged('prostate_cancer_diagnosis_age', $event)"
+                                     (keyup.enter)="onDiagnosisAgeChanged('prostate_cancer_diagnosis_age', $event)"
+                                     placeholder="Age"
+                                     title="0 = dalla nascita, vuoto = nessuna malattia">
+                              <button *ngIf="personaSelezionata.prostate_cancer_diagnosis_age !== null && personaSelezionata.prostate_cancer_diagnosis_age !== undefined && canHaveProstateCancer()"
+                                      type="button" 
+                                      class="btn btn-sm btn-outline-secondary ms-1 p-1"
+                                      style="width: 24px; height: 24px; font-size: 12px; line-height: 1;"
+                                      (click)="clearDiagnosis('prostate_cancer_diagnosis_age')"
+                                      title="Rimuovi malattia (nessuna diagnosi)">
+                                ×
+                              </button>
+                              <span *ngIf="getDiagnosisAgeError('prostate_cancer_diagnosis_age')" 
+                                    class="ms-2 text-danger small d-flex align-items-center"
+                                    [title]="getDiagnosisAgeError('prostate_cancer_diagnosis_age')"
+                                    style="white-space: nowrap;">
+                                <i class="feather icon-alert-triangle me-1"></i>
+                                <span>{{ getDiagnosisAgeErrorLabel('prostate_cancer_diagnosis_age') }}</span>
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -848,10 +974,30 @@
                               <div class="patologia-colore diabetes me-2"></div>
                               <label class="form-label mb-0 small">Diabetes</label>
                             </div>
-                            <input type="number" class="form-control form-control-sm" 
-                                   style="width: 80px;" min="0" max="120"
-                                   [value]="personaSelezionata.diabetes_diagnosis_age || ''"
-                                   placeholder="Age">
+                            <div class="d-flex align-items-center">
+                              <input type="number" class="form-control form-control-sm" 
+                                     style="width: 80px;" min="0" max="120"
+                                     [value]="personaSelezionata.diabetes_diagnosis_age || ''"
+                                     (blur)="onDiagnosisAgeChanged('diabetes_diagnosis_age', $event)"
+                                     (keyup.enter)="onDiagnosisAgeChanged('diabetes_diagnosis_age', $event)"
+                                     placeholder="Age"
+                                     title="0 = dalla nascita, vuoto = nessuna malattia">
+                              <button *ngIf="personaSelezionata.diabetes_diagnosis_age !== null && personaSelezionata.diabetes_diagnosis_age !== undefined"
+                                      type="button" 
+                                      class="btn btn-sm btn-outline-secondary ms-1 p-1"
+                                      style="width: 24px; height: 24px; font-size: 12px; line-height: 1;"
+                                      (click)="clearDiagnosis('diabetes_diagnosis_age')"
+                                      title="Rimuovi malattia (nessuna diagnosi)">
+                                ×
+                              </button>
+                              <span *ngIf="getDiagnosisAgeError('diabetes_diagnosis_age')" 
+                                    class="ms-2 text-danger small d-flex align-items-center"
+                                    [title]="getDiagnosisAgeError('diabetes_diagnosis_age')"
+                                    style="white-space: nowrap;">
+                                <i class="feather icon-alert-triangle me-1"></i>
+                                <span>{{ getDiagnosisAgeErrorLabel('diabetes_diagnosis_age') }}</span>
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -862,10 +1008,30 @@
                               <div class="patologia-colore heart-disease me-2"></div>
                               <label class="form-label mb-0 small">Heart disease</label>
                             </div>
-                            <input type="number" class="form-control form-control-sm" 
-                                   style="width: 80px;" min="0" max="120"
-                                   [value]="personaSelezionata.heart_disease_diagnosis_age || ''"
-                                   placeholder="Age">
+                            <div class="d-flex align-items-center">
+                              <input type="number" class="form-control form-control-sm" 
+                                     style="width: 80px;" min="0" max="120"
+                                     [value]="personaSelezionata.heart_disease_diagnosis_age || ''"
+                                     (blur)="onDiagnosisAgeChanged('heart_disease_diagnosis_age', $event)"
+                                     (keyup.enter)="onDiagnosisAgeChanged('heart_disease_diagnosis_age', $event)"
+                                     placeholder="Age"
+                                     title="0 = dalla nascita, vuoto = nessuna malattia">
+                              <button *ngIf="personaSelezionata.heart_disease_diagnosis_age !== null && personaSelezionata.heart_disease_diagnosis_age !== undefined"
+                                      type="button" 
+                                      class="btn btn-sm btn-outline-secondary ms-1 p-1"
+                                      style="width: 24px; height: 24px; font-size: 12px; line-height: 1;"
+                                      (click)="clearDiagnosis('heart_disease_diagnosis_age')"
+                                      title="Rimuovi malattia (nessuna diagnosi)">
+                                ×
+                              </button>
+                              <span *ngIf="getDiagnosisAgeError('heart_disease_diagnosis_age')" 
+                                    class="ms-2 text-danger small d-flex align-items-center"
+                                    [title]="getDiagnosisAgeError('heart_disease_diagnosis_age')"
+                                    style="white-space: nowrap;">
+                                <i class="feather icon-alert-triangle me-1"></i>
+                                <span>{{ getDiagnosisAgeErrorLabel('heart_disease_diagnosis_age') }}</span>
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
