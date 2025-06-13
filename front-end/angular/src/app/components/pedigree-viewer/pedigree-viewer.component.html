@@ -632,8 +632,9 @@
                                       [class.selected]="personaSelezionata.sex === 'U'"
                                       [class.unselected]="personaSelezionata.sex !== 'U'"
                                       [disabled]="!canEditSex()"
+                                      [title]="canEditSex() ? 'Non specificato' : ''"
                                       (click)="onCampoModificato('sex', 'U')">
-                                Altro
+                                NS
                               </button>
                             </div>
                             <i class="fas fa-lock text-muted ms-2" 
