@@ -1,11 +1,11 @@
 --
--- PostgreSQL database dump 05/06/2025 ore 21:30
+-- PostgreSQL database dump
 --
 
 -- Dumped from database version 17.4
 -- Dumped by pg_dump version 17.4
 
--- Started on 2025-06-05 21:16:48
+-- Started on 2025-06-13 17:08:59
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -21,7 +21,7 @@ SET row_security = off;
 
 --
 -- TOC entry 226 (class 1259 OID 57656)
--- Name: caregiver_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: caregiver_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.caregiver_id_seq
@@ -32,15 +32,13 @@ CREATE SEQUENCE public.caregiver_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.caregiver_id_seq OWNER TO postgres;
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
 -- TOC entry 224 (class 1259 OID 57632)
--- Name: caregiver; Type: TABLE; Schema: public; Owner: postgres
+-- Name: caregiver; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.caregiver (
@@ -57,11 +55,9 @@ CREATE TABLE public.caregiver (
 );
 
 
-ALTER TABLE public.caregiver OWNER TO postgres;
-
 --
 -- TOC entry 219 (class 1259 OID 24845)
--- Name: patient; Type: TABLE; Schema: public; Owner: postgres
+-- Name: patient; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.patient (
@@ -78,11 +74,9 @@ CREATE TABLE public.patient (
 );
 
 
-ALTER TABLE public.patient OWNER TO postgres;
-
 --
 -- TOC entry 227 (class 1259 OID 57657)
--- Name: patient_caregiver_association_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: patient_caregiver_association_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.patient_caregiver_association_id_seq
@@ -93,11 +87,9 @@ CREATE SEQUENCE public.patient_caregiver_association_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.patient_caregiver_association_id_seq OWNER TO postgres;
-
 --
 -- TOC entry 225 (class 1259 OID 57641)
--- Name: patient_caregiver_association; Type: TABLE; Schema: public; Owner: postgres
+-- Name: patient_caregiver_association; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.patient_caregiver_association (
@@ -108,11 +100,9 @@ CREATE TABLE public.patient_caregiver_association (
 );
 
 
-ALTER TABLE public.patient_caregiver_association OWNER TO postgres;
-
 --
 -- TOC entry 218 (class 1259 OID 24844)
--- Name: patient_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: patient_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.patient_id_seq
@@ -124,12 +114,10 @@ CREATE SEQUENCE public.patient_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.patient_id_seq OWNER TO postgres;
-
 --
 -- TOC entry 4908 (class 0 OID 0)
 -- Dependencies: 218
--- Name: patient_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: patient_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.patient_id_seq OWNED BY public.patient.id;
@@ -137,7 +125,7 @@ ALTER SEQUENCE public.patient_id_seq OWNED BY public.patient.id;
 
 --
 -- TOC entry 217 (class 1259 OID 24779)
--- Name: patient_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: patient_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.patient_seq
@@ -148,11 +136,9 @@ CREATE SEQUENCE public.patient_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.patient_seq OWNER TO postgres;
-
 --
 -- TOC entry 223 (class 1259 OID 57558)
--- Name: pedigree; Type: TABLE; Schema: public; Owner: postgres
+-- Name: pedigree; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.pedigree (
@@ -166,11 +152,9 @@ CREATE TABLE public.pedigree (
 );
 
 
-ALTER TABLE public.pedigree OWNER TO postgres;
-
 --
 -- TOC entry 222 (class 1259 OID 57557)
--- Name: pedigree_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: pedigree_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.pedigree_id_seq
@@ -181,12 +165,10 @@ CREATE SEQUENCE public.pedigree_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.pedigree_id_seq OWNER TO postgres;
-
 --
 -- TOC entry 4909 (class 0 OID 0)
 -- Dependencies: 222
--- Name: pedigree_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: pedigree_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.pedigree_id_seq OWNED BY public.pedigree.id;
@@ -194,7 +176,7 @@ ALTER SEQUENCE public.pedigree_id_seq OWNED BY public.pedigree.id;
 
 --
 -- TOC entry 221 (class 1259 OID 32996)
--- Name: users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
@@ -210,11 +192,9 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
-
 --
 -- TOC entry 220 (class 1259 OID 32995)
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -226,12 +206,10 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
-
 --
 -- TOC entry 4910 (class 0 OID 0)
 -- Dependencies: 220
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
@@ -239,7 +217,7 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 --
 -- TOC entry 4716 (class 2604 OID 57658)
--- Name: patient id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: patient id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient ALTER COLUMN id SET DEFAULT nextval('public.patient_id_seq'::regclass);
@@ -247,7 +225,7 @@ ALTER TABLE ONLY public.patient ALTER COLUMN id SET DEFAULT nextval('public.pati
 
 --
 -- TOC entry 4718 (class 2604 OID 57561)
--- Name: pedigree id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: pedigree id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pedigree ALTER COLUMN id SET DEFAULT nextval('public.pedigree_id_seq'::regclass);
@@ -255,7 +233,7 @@ ALTER TABLE ONLY public.pedigree ALTER COLUMN id SET DEFAULT nextval('public.ped
 
 --
 -- TOC entry 4717 (class 2604 OID 33012)
--- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
@@ -264,7 +242,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 --
 -- TOC entry 4899 (class 0 OID 57632)
 -- Dependencies: 224
--- Data for Name: caregiver; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: caregiver; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.caregiver (id, first_name, last_name, email, phone, address, date_of_birth, fiscal_code, gender) FROM stdin;
@@ -272,6 +250,8 @@ COPY public.caregiver (id, first_name, last_name, email, phone, address, date_of
 5	Marco	Bianchi	marco.bianchi@example.com	+39 333 1234567	Via Roma 15, Milano	1975-05-15	BNCMRC75E15F205X	M
 26	Giacinto	Facchetti	giacinto.facchetti@inter.com	+39 3804012015	Via Internazionale 1, Milano	1942-07-18	GIAFCC65I10P190S	M
 23	Piero	Ausilio	piero.ausilio@inter.com	+39 3258945610	Via Internazionale 120, Milano	1972-06-28	SLAPRI72H28F205F	M
+27	Claudio	Ranieri	claudio.ranieri@italia.it	+39 0908070605	Via Carbonara 22, Roma	1951-10-20	RNRCLD51R20H501F	M
+21	Giuseppe	Marotta	giuseppe.marotta@inter.it	+39 6069096969	Via Internazionale 4, Milano	1957-03-25	MRTGPP57C25L682W	M
 7	Paolo	gialli	paolo.gialli@example.com	+39 379 3456789	Corso Roma 1, milano	1985-01-15	GLLPLA80P60H501W	M
 8	Gino	Paoli	gino.paoli@gmail.com	+39 8007006001	Via lame 1, Bari	1980-10-10	GNOPOL80P60H501W	M
 9	Pino	Neri	pino.neri@gmail.com	+9090909090	Via Ciao 10, Bari	2002-10-10	PNONRI80P60H501W	M
@@ -287,7 +267,6 @@ COPY public.caregiver (id, first_name, last_name, email, phone, address, date_of
 6	Laura	Verdi	laura.verdi@example.com	+39 339 9876543	Corso Vittorio 25, Roma	1980-09-20	VRDLRA80P60H501W	F
 15	Maria	Dico	maria.dico@gmail.com	+90 708050906045	Via Lame 7/b, Gallipoli	1978-03-24	MRIDCI80P60H501F	F
 20	Nino	Celestino	nino.celestino@example.com	+39 379 3458888	Corso Venezia 10, Milano	1988-03-24	NINCLS80P60H501W	M
-21	Giuseppe	Marotta	giuseppe.marotta@inter.it	+39 6009006697	Via Internazionale 4, Milano	1957-03-25	MRTGPP57C25L682W	M
 22	Luca	Yellow	luca.yellow@gmail.it	+39 0001119998	Via Spezia 1, Roma	1985-08-07	PPPMMM80L88K405Q	M
 24	Filomena	Nerino	filomena.nerino@gmail.com	+390 1221231248	Via delle Regioni 206, Bari	1987-10-09	FLMNRS80P60H501L	F
 \.
@@ -296,7 +275,7 @@ COPY public.caregiver (id, first_name, last_name, email, phone, address, date_of
 --
 -- TOC entry 4894 (class 0 OID 24845)
 -- Dependencies: 219
--- Data for Name: patient; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: patient; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.patient (id, first_name, last_name, date_of_birth, email, phone, address, gender, fiscal_code) FROM stdin;
@@ -327,20 +306,21 @@ COPY public.patient (id, first_name, last_name, date_of_birth, email, phone, add
 41	Denzel	Dumfires	1996-04-18	denzel.dumfries@inter.it	+39 8887774441	Via Internazionale 93, Milano	M	DNZDFR96D18F205X
 42	Alessandro	Bastoni	1999-04-13	alessandro.bastoni@gmail.it	+39 0009990001	Via Internazionale 1, Milano	M	BSTLSN99D13F205G
 40	Kylian	Mbappé	1998-12-20	kylian.mbappe@RealMadrid.com	+80 5558889990	Via Bernabeu 9, Madrid	M	MBPKLN98T20F205O
-8	Andrea	pirloooo	1979-05-19	andrea.pirla@fakeemail.com	+393456789012	Via Regista 21, Brescia	M	PRLNDR79E19L219A
 44	Francesca	Verdi	1954-04-18	francesca.verdi@gmail.com	+39 8887779994	Via Borgo Nuovo 117, Roma	F	VRDFNC54D58G273E
 38	Francesco	Acerbi	1988-02-10	francesco.acerbi@inter.com	+39 909080801	Viale Internazionale 15, Milano	M	CRBFNC88B10F205X
+60	Francesco Pio	Esposito	2005-06-28	francesco_pio.esposito@inter.it	+39 0050060070	Via Veneto 7, Milano	M	FNCSPT70E88Q145R
 30	Javier	Zanetti	1973-08-10	javier.zanetti@internazionale.it	+39 5974120369	Via Internazionale 90, Milano	M	ZNTJVR73M10F205T
 53	Neymar	Junior	1992-02-05	neymar.jr@barcelona.it	+90 0000000000	Viale Sao Paulo, Brazil	M	JNRNMR80A01F205D
 54	Simone	Inzaghi	1976-04-05	simone.inzaghi@inter.it	+39 8006009697	Via Internazionale 1, Milano	M	NZGSMN76D05G535Q
 46	Joshua	Zirkzee	2001-05-22	joshua.zirkzee@inter.it	+90 8887775551	Viale Vanoni 130, Bari	M	ZRKJSH01E22F205H
+8	Andrea	Pirlo	1979-05-19	andrea.pirla@fakeemail.com	+393456789012	Via Regista 21, Brescia	M	PRLNDR79E19L219A
 \.
 
 
 --
 -- TOC entry 4900 (class 0 OID 57641)
 -- Dependencies: 225
--- Data for Name: patient_caregiver_association; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: patient_caregiver_association; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.patient_caregiver_association (id, patient_id, caregiver_id, relationship) FROM stdin;
@@ -366,26 +346,30 @@ COPY public.patient_caregiver_association (id, patient_id, caregiver_id, relatio
 3	16	5	Fratello/Sorella
 28	53	26	amico
 27	53	23	Familiare
+30	60	27	amico
+29	60	21	Familiare
+31	6	14	altro
+32	8	23	familiare
 \.
 
 
 --
 -- TOC entry 4898 (class 0 OID 57558)
 -- Dependencies: 223
--- Data for Name: pedigree; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: pedigree; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.pedigree (id, patient_id, data, created_by, created_at, last_modified, last_modified_by) FROM stdin;
-17	26	[{"age": 3, "sex": "M", "yob": 2022, "name": "HkIR", "father": "TxSy", "mother": "odKX", "display_name": "Kenye"}, {"sex": "M", "name": "IaIP", "father": "LamineYamal26", "mother": "LdzO"}, {"age": 17, "sex": "M", "yob": 2007, "name": "LamineYamal26", "father": "TxSy", "mother": "odKX", "proband": true, "display_name": "Lamine Yamal"}, {"age": 15, "sex": "F", "yob": 2010, "name": "LdzO", "father": "TxSy", "mother": "odKX", "noparents": true, "display_name": "Jasmine"}, {"sex": "F", "name": "odKX", "father": null, "mother": null, "noparents": true, "display_name": "Sheila"}, {"sex": "M", "name": "TxSy", "father": null, "mother": null, "noparents": true, "display_name": "Mounir"}]	2	2025-06-04 15:52:56.683783	2025-06-04 16:58:33.300122	2
-18	36	[{"age": 23, "sex": "M", "yob": 2002, "name": "NicolaZalewski36", "proband": true, "top_level": true, "display_name": "Nicola Zalewski"}]	1	2025-06-05 12:39:14.368601	2025-06-05 13:07:10.965117	1
-5	47	[{"age": 2, "sex": "M", "yob": 2023, "name": "EboI", "father": "FedericoDimarco47", "mother": "SKTP", "display_name": "Diego"}, {"age": 27, "sex": "M", "yob": 1997, "name": "FedericoDimarco47", "father": "uOKf", "mother": "INRf", "proband": true, "display_name": "Federico Dimarco"}, {"age": 54, "sex": "F", "yob": 1976, "name": "INRf", "top_level": true, "display_name": "Arianna"}, {"sex": "M", "name": "JVTI", "father": "uOKf", "mother": "INRf", "display_name": "Filippo"}, {"age": 6, "sex": "F", "yob": 2019, "name": "nYZB", "father": "FedericoDimarco47", "mother": "SKTP", "display_name": "Silvia"}, {"age": 29, "sex": "F", "yob": 1996, "name": "rEWp", "father": "uOKf", "mother": "INRf", "display_name": "Simona", "diabetes_diagnosis_age": "1"}, {"age": 25, "sex": "F", "yob": 2000, "name": "SKTP", "father": "uOKf", "mother": "INRf", "noparents": true, "display_name": "Gaia"}, {"age": 55, "sex": "M", "yob": 1975, "name": "uOKf", "top_level": true, "display_name": "Paolo"}]	1	2025-05-29 16:28:07.204408	2025-06-05 16:42:27.715931	2
+21	18	[{"sex": "M", "name": "FjVS", "top_level": true, "display_name": " "}, {"sex": "F", "name": "JWOP", "top_level": true}, {"sex": "M", "name": "YHfN", "top_level": true}, {"sex": "F", "name": "aTqY", "top_level": true}, {"age": 37, "sex": "M", "yob": 1987, "name": "LionelMessi18", "father": "FjVS", "mother": "JWOP", "proband": true, "display_name": "Lionel", "diabetes_diagnosis_age": "1"}, {"sex": "F", "name": "iSkV", "father": "YHfN", "mother": "aTqY", "display_name": "Antonella"}, {"sex": "M", "name": "VEtz", "father": "LionelMessi18", "mother": "iSkV", "display_name": "Matteo"}, {"sex": "M", "name": "wHYO", "father": "LionelMessi18", "mother": "iSkV", "display_name": "Ciro"}, {"sex": "M", "name": "igtg", "father": "LionelMessi18", "mother": "iSkV", "display_name": "Thiago"}]	2	2025-06-06 11:19:44.443764	2025-06-10 16:38:16.198325	2
+5	47	[{"age": 2, "sex": "M", "yob": 2023, "name": "EboI", "father": "FedericoDimarco47", "mother": "SKTP", "display_name": "Diego"}, {"age": 27, "sex": "M", "yob": 1997, "name": "FedericoDimarco47", "father": "uOKf", "mother": "INRf", "proband": true, "display_name": "Federico Dimarco"}, {"age": 54, "sex": "F", "yob": 1976, "name": "INRf", "top_level": true, "display_name": "Arianna"}, {"sex": "M", "name": "JVTI", "father": "uOKf", "mother": "INRf", "display_name": "Filippo"}, {"age": 6, "sex": "F", "yob": 2019, "name": "nYZB", "father": "FedericoDimarco47", "mother": "SKTP", "display_name": "Silvia"}, {"age": 29, "sex": "F", "yob": 1996, "name": "rEWp", "father": "uOKf", "mother": "INRf", "display_name": "Simona", "diabetes_diagnosis_age": "1"}, {"age": 26, "sex": "F", "yob": 1999, "name": "SKTP", "father": "waOp", "mother": "aJpr", "display_name": "Gaia", "diabetes_diagnosis_age": 9}, {"age": 31, "sex": "M", "yob": 1994, "name": "XpEi", "father": "waOp", "mother": "aJpr", "display_name": "Angelo"}, {"sex": "F", "name": "fRrA", "father": "waOp", "hidden": true, "mother": "aJpr", "noparents": true}, {"age": 10, "sex": "M", "yob": 2015, "name": "mVns", "father": "XpEi", "mother": "fRrA", "display_name": "John"}, {"age": 55, "sex": "M", "yob": 1975, "name": "uOKf", "top_level": true, "display_name": "Paolo"}, {"sex": "M", "name": "waOp", "top_level": true, "display_name": "Lucia"}, {"sex": "F", "name": "aJpr", "top_level": true, "display_name": "Emanuele"}]	1	2025-05-29 16:28:07.204408	2025-06-13 15:31:07.159281	2
+26	7	[{"age": 76, "sex": "M", "yob": 1949, "name": "qAnT", "top_level": true, "display_name": "Domenico"}, {"age": 71, "sex": "F", "yob": 1954, "name": "vySJ", "top_level": true, "display_name": "Donata"}, {"age": 60, "sex": "M", "yob": 1965, "name": "khVN", "father": "qAnT", "mother": "vySJ", "noparents": true, "display_name": "Paride"}, {"age": 57, "sex": "M", "yob": 1968, "name": "PaoloMaldini7", "father": "qAnT", "mother": "vySJ", "proband": true, "display_name": "Paolo"}, {"sex": "M", "name": "tDeX", "father": "qAnT", "hidden": true, "mother": "vySJ", "noparents": true}, {"age": 56, "sex": "F", "yob": 1969, "name": "GRje", "father": "qAnT", "mother": "vySJ", "display_name": "Arianna"}, {"age": 48, "sex": "F", "yob": 1977, "name": "mcqw", "father": "qAnT", "mother": "vySJ", "display_name": "Rina"}, {"age": 22, "sex": "F", "yob": 2003, "name": "TtIy", "father": "tDeX", "mother": "mcqw", "display_name": "Maria"}, {"age": 24, "sex": "M", "yob": 2001, "name": "scpy", "father": "tDeX", "mother": "mcqw", "display_name": "Filippo"}, {"age": 35, "sex": "F", "yob": 1990, "name": "wlef", "father": "khVN", "mother": "GRje", "display_name": "Simona"}, {"age": 30, "sex": "F", "yob": 1995, "name": "UPlF", "father": "khVN", "mother": "GRje", "display_name": "Micaela"}, {"sex": "M", "name": "EwtQ", "father": "qAnT", "hidden": true, "mother": "vySJ", "noparents": true}, {"age": 45, "sex": "F", "yob": 1980, "name": "tiai", "father": "qAnT", "mother": "vySJ", "status": "0", "display_name": "Lucrezia"}, {"age": 56, "sex": "F", "yob": 1969, "name": "Oftn", "father": "qAnT", "mother": "vySJ", "display_name": "Noemi"}, {"age": 28, "sex": "F", "yob": 1997, "name": "RhHl", "father": "EwtQ", "mother": "Oftn", "display_name": "Anna"}, {"sex": "M", "name": "OFhU", "father": "qAnT", "hidden": true, "mother": "vySJ", "noparents": true}, {"sex": "M", "name": "Qvia", "father": "qAnT", "hidden": true, "mother": "vySJ", "noparents": true}, {"age": 48, "sex": "F", "yob": 1977, "name": "rjVb", "father": "qAnT", "mother": "vySJ", "display_name": "Ludovica"}, {"age": 26, "sex": "M", "yob": 1999, "name": "JaVO", "father": "OFhU", "mother": "rjVb", "display_name": "Nicola"}, {"age": 23, "sex": "M", "yob": 2002, "name": "Kkgt", "father": "OFhU", "mother": "rjVb", "display_name": "Alessandro"}, {"age": 46, "sex": "F", "yob": 1979, "name": "mKPi", "father": "qAnT", "mother": "vySJ", "display_name": "Pasquina"}, {"age": 8, "sex": "F", "yob": 2017, "name": "NvuU", "father": "Qvia", "mother": "mKPi", "display_name": "Ambra"}, {"age": 10, "sex": "F", "yob": 2015, "name": "gAQP", "father": "Qvia", "mother": "mKPi", "display_name": "Sissi"}, {"age": 50, "sex": "M", "yob": 1975, "name": "OeXS", "father": "qAnT", "mother": "vySJ", "display_name": "Antonio"}, {"age": 14, "sex": "M", "yob": 2011, "name": "dhsF", "father": "OeXS", "mother": "briL", "display_name": "Giovanni"}, {"sex": "F", "name": "briL", "father": "qAnT", "hidden": true, "mother": "vySJ", "noparents": true}, {"age": 45, "sex": "M", "yob": 1980, "name": "rHyY", "father": "qAnT", "mother": "vySJ", "display_name": "Vincenzo"}, {"age": 26, "sex": "F", "yob": 1999, "name": "pAgo", "father": "rHyY", "mother": "UkDv", "display_name": "Giancarlo"}, {"age": 18, "sex": "M", "yob": 2007, "name": "Hxru", "father": "rHyY", "mother": "UkDv", "display_name": "Silvia"}, {"sex": "F", "name": "UkDv", "father": "qAnT", "hidden": true, "mother": "vySJ", "noparents": true}, {"age": 25, "sex": "M", "yob": 2000, "name": "jdOG", "father": "PaoloMaldini7", "mother": "DRhe", "display_name": "Daniel"}, {"age": 27, "sex": "F", "yob": 1998, "name": "eFws", "father": "PaoloMaldini7", "mother": "DRhe", "display_name": "Cristina"}, {"sex": "F", "name": "DRhe", "father": "qAnT", "hidden": true, "mother": "vySJ", "noparents": true}]	2	2025-06-11 09:40:11.348831	2025-06-13 15:25:24.131848	2
 \.
 
 
 --
 -- TOC entry 4896 (class 0 OID 32996)
 -- Dependencies: 221
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 COPY public.users (id, username, password, email, first_name, last_name, date_of_birth, address, phone) FROM stdin;
@@ -404,40 +388,41 @@ COPY public.users (id, username, password, email, first_name, last_name, date_of
 17	peppe_rossi	$2a$10$BnzuSq7Lt40eOZvw62OnNeaZrsAC5LkwOSTBaP73Pc5BCaMccCB..	giuseppe.rossi@gmail.com	Giuseppe	Rossi	1996-01-26	Via Paolo Benedetto 8, Firenze	+39 1112223330
 18	DrHouse	$2a$10$/eQvt0FUPp8McuMEX6LMFu4m2rvUJn7iEwssuliqp6Xdl5KaEB4p6	ciao@hotmail.it	James	Laurie	1959-06-11	Via Rossani 14, Bari	+90 8005004008
 19	ClaudioR_46	$2a$10$19LJFX7PphHK1cj45hAZQeh98HC.y4CcW1YuWUaAWu3/.SVjsjMhu	claudio@gmail.com	Claudio	Romix	2002-02-21	Viale Verde 21, Bari	+39 9998887775
+20	user	$2a$10$/6Rhp8QAA5o75Vaypx6PKe63u8YoS2Fpo4NKrdkRlcf5fjkYMgfVW	admin@null.it	ADMIN	ADMIN	\N	\N	0000000000
 \.
 
 
 --
 -- TOC entry 4911 (class 0 OID 0)
 -- Dependencies: 226
--- Name: caregiver_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: caregiver_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.caregiver_id_seq', 26, true);
+SELECT pg_catalog.setval('public.caregiver_id_seq', 27, true);
 
 
 --
 -- TOC entry 4912 (class 0 OID 0)
 -- Dependencies: 227
--- Name: patient_caregiver_association_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: patient_caregiver_association_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.patient_caregiver_association_id_seq', 28, true);
+SELECT pg_catalog.setval('public.patient_caregiver_association_id_seq', 32, true);
 
 
 --
 -- TOC entry 4913 (class 0 OID 0)
 -- Dependencies: 218
--- Name: patient_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: patient_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.patient_id_seq', 59, true);
+SELECT pg_catalog.setval('public.patient_id_seq', 60, true);
 
 
 --
 -- TOC entry 4914 (class 0 OID 0)
 -- Dependencies: 217
--- Name: patient_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: patient_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.patient_seq', 451, true);
@@ -446,147 +431,22 @@ SELECT pg_catalog.setval('public.patient_seq', 451, true);
 --
 -- TOC entry 4915 (class 0 OID 0)
 -- Dependencies: 222
--- Name: pedigree_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: pedigree_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.pedigree_id_seq', 18, true);
+SELECT pg_catalog.setval('public.pedigree_id_seq', 26, true);
 
 
 --
 -- TOC entry 4916 (class 0 OID 0)
 -- Dependencies: 220
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 19, true);
+SELECT pg_catalog.setval('public.users_id_seq', 21, true);
 
 
---
--- TOC entry 4733 (class 2606 OID 57640)
--- Name: caregiver caregiver_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.caregiver
-    ADD CONSTRAINT caregiver_email_key UNIQUE (email);
-
-
---
--- TOC entry 4735 (class 2606 OID 57664)
--- Name: caregiver caregiver_fiscal_code_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.caregiver
-    ADD CONSTRAINT caregiver_fiscal_code_key UNIQUE (fiscal_code);
-
-
---
--- TOC entry 4737 (class 2606 OID 57638)
--- Name: caregiver caregiver_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.caregiver
-    ADD CONSTRAINT caregiver_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4741 (class 2606 OID 57645)
--- Name: patient_caregiver_association patient_caregiver_association_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.patient_caregiver_association
-    ADD CONSTRAINT patient_caregiver_association_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4726 (class 2606 OID 24858)
--- Name: patient patient_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.patient
-    ADD CONSTRAINT patient_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4731 (class 2606 OID 57567)
--- Name: pedigree pedigree_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pedigree
-    ADD CONSTRAINT pedigree_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4739 (class 2606 OID 57666)
--- Name: caregiver unique_fiscal_code; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.caregiver
-    ADD CONSTRAINT unique_fiscal_code UNIQUE (fiscal_code);
-
-
---
--- TOC entry 4728 (class 2606 OID 33014)
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4729 (class 1259 OID 57578)
--- Name: idx_pedigree_patient; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_pedigree_patient ON public.pedigree USING btree (patient_id);
-
-
---
--- TOC entry 4745 (class 2606 OID 57651)
--- Name: patient_caregiver_association patient_caregiver_association_caregiver_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.patient_caregiver_association
-    ADD CONSTRAINT patient_caregiver_association_caregiver_id_fkey FOREIGN KEY (caregiver_id) REFERENCES public.caregiver(id);
-
-
---
--- TOC entry 4746 (class 2606 OID 57646)
--- Name: patient_caregiver_association patient_caregiver_association_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.patient_caregiver_association
-    ADD CONSTRAINT patient_caregiver_association_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patient(id);
-
-
---
--- TOC entry 4742 (class 2606 OID 57573)
--- Name: pedigree pedigree_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pedigree
-    ADD CONSTRAINT pedigree_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
-
-
---
--- TOC entry 4743 (class 2606 OID 57694)
--- Name: pedigree pedigree_last_modified_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pedigree
-    ADD CONSTRAINT pedigree_last_modified_by_fkey FOREIGN KEY (last_modified_by) REFERENCES public.users(id);
-
-
---
--- TOC entry 4744 (class 2606 OID 57699)
--- Name: pedigree pedigree_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pedigree
-    ADD CONSTRAINT pedigree_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patient(id);
-
-
--- Completed on 2025-06-05 21:16:49
+-- Completed on 2025-06-13 17:09:00
 
 --
 -- PostgreSQL database dump complete
