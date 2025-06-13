@@ -1050,3 +1050,33 @@
   </div>
 </div>
 <!-- [ Main Content ] end -->
+
+<!-- Modale di conferma rimozione diagnosi non valide -->
+<div class="modal fade show" tabindex="-1" [ngStyle]="{display: showRemoveDiagnosesModal ? 'block' : 'none', background: 'rgba(0,0,0,0.5)'}" *ngIf="showRemoveDiagnosesModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title text-warning">
+          <i class="feather icon-alert-triangle me-2"></i>
+          Diagnosi non valide
+        </h5>
+      </div>
+      <div class="modal-body">
+        <p>
+          L'età inserita è inconsistente rispetto alle seguenti diagnosi, che non sono più valide e verranno eliminate:
+        </p>
+        <ul>
+          <li *ngFor="let diag of diagnosesToRemove">
+            <span class="fw-semibold">{{ diag.replace('_diagnosis_age', '').replace('_', ' ') | titlecase }}</span>
+            <span class="text-danger ms-2">({{ getDiagnosisAgeError(diag) }})</span>
+          </li>
+        </ul>
+        <p class="mb-0">Vuoi procedere con la rimozione automatica?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cancelRemoveDiagnoses()">Annulla</button>
+        <button class="btn btn-warning" (click)="confirmRemoveDiagnoses()">Rimuovi diagnosi</button>
+      </div>
+    </div>
+  </div>
+</div>
