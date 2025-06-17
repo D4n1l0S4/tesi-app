@@ -182,6 +182,14 @@ sudo service postgresql start
 ### 2. ⚙️ Avvia Back-end
 ```bash
 cd back-end/crud
+
+# Su Windows:
+.\mvnw.cmd spring-boot:run
+
+# Su Linux/macOS:
+./mvnw spring-boot:run
+
+# Se hai Maven installato globalmente:
 mvn spring-boot:run
 ```
 Il server sarà disponibile su: `http://localhost:8085`
@@ -192,6 +200,12 @@ cd front-end/angular
 npm start
 ```
 L'applicazione sarà disponibile su: `http://localhost:4200`
+
+> **⚠️ Nota:** Servono **2 terminali separati** - uno per il back-end e uno per il front-end.
+
+### 🛑 Fermare i Servizi
+- **Ctrl + C** in entrambi i terminali per fermare i servizi
+- Verifica: `netstat -ano | findstr ":4200 :8085"` (nessun output = servizi fermati)
 
 ## 📖 Utilizzo
 
