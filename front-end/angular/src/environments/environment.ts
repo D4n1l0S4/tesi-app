@@ -7,9 +7,9 @@ import packageInfo from '../../package.json';
 export const environment = {
   production: false,
   appVersion: packageInfo.version,
-  apiUrl: 'http://localhost:8085/api/v1'
+  apiUrl: ' https://its-miller-ann-pg.trycloudflare.com/api/v1'
 };
-
+//cambiala poi in http://localhost:8080/api/v1
 /*
  * For easier debugging in development mode, you can import the following file
  * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
