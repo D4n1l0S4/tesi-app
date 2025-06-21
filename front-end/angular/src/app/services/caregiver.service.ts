@@ -6,12 +6,13 @@ import { tap, catchError } from 'rxjs/operators';
 import { CaregiverDTO } from '../models/caregiver-dto.model';
 import { CaregiverResponse } from '../models/caregiver-response.model';
 import { ApiResponse } from '../models/api-response.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CaregiverService {
-  private apiUrl = 'http://localhost:8085/api/v1/caregivers';
+  private apiUrl = `${environment.apiUrl}/caregivers`;
 
   constructor(private http: HttpClient) {}
 

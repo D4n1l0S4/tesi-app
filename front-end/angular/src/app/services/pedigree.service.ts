@@ -6,13 +6,14 @@ import { tap, catchError } from 'rxjs/operators';
 import { ApiResponse } from '../models/api-response.model';
 import { PedigreeRequestDto } from '../models/pedigree-request-dto.model';
 import { PedigreeResponseDto } from '../models/pedigree-response-dto.model';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class PedigreeService {
-  private apiUrl = 'http://localhost:8085/api/v1/pedigrees';
+  private apiUrl = `${environment.apiUrl}/pedigrees`;
 
   constructor(private http: HttpClient) { }
 

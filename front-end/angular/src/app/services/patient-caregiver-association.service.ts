@@ -5,12 +5,13 @@ import { tap } from 'rxjs/operators';
 import { PatientCaregiverAssociation } from '../models/patient-caregiver-association.model';
 import { PatientCaregiverAssociationDTO } from '../models/patient-caregiver-association-dto.model';
 import { PatientCaregiverAssociationResponseDTO } from '../models/patient-caregiver-association-response.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PatientCaregiverAssociationService {
-  private apiUrl = 'http://localhost:8085/api/v1/patient-caregiver';
+  private apiUrl = `${environment.apiUrl}/patient-caregiver`;
 
   constructor(private http: HttpClient) {}
 

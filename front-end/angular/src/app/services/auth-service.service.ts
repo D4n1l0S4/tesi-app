@@ -4,13 +4,14 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { LoginRequest } from '../models/login-request.model';
 import { RegisterRequest } from '../models/register-request.model';
 import { AuthResponse } from '../models/auth-response.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private apiUrl = 'http://localhost:8085/api/v1/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
 
   // Observable per tenere traccia dello stato di autenticazione
   private currentUserSubject = new BehaviorSubject<AuthResponse | null>(null);
