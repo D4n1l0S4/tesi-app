@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x ./mvnw \
-    && ./mvnw clean install -DskipTests
+# Rendi eseguibile mvnw (fix per Permission denied)
+RUN chmod +x mvnw
 
-CMD ["java", "-jar", "target/crud-0.0.1-SNAPSHOT.jar"]
+RUN ./mvnw clean install -DskipTests
+
+CMD ["java", "-jar", "target/*.jar"]
