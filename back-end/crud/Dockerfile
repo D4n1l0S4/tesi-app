@@ -9,4 +9,4 @@ RUN chmod +x mvnw
 
 RUN ./mvnw clean install -DskipTests
 
-CMD ["java", "-jar", "target/*.jar"]
+CMD ["java", "-jar", "target/crud-0.0.1-SNAPSHOT.jar"]
