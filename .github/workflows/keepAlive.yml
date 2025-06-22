@@ -2,8 +2,8 @@ name: Keep Alive App
 
 on:
   schedule:
-    - cron: '*/12 * * * *'  # Ogni 12 minuti
-  workflow_dispatch:        # Avvio manuale
+    - cron: '*/10 * * * *'  # Ogni 10 minuti
+  workflow_dispatch:
 
 jobs:
   ping:
@@ -12,14 +12,14 @@ jobs:
     steps:
     - name: Ping endpoint principale con retry
       run: |
-        echo "Pinging /health at $(date)"
-        for i in {1..5}; do
+        echo "⏱ Pinging /health at $(date)"
+        for i in {1..20}; do
           echo "Tentativo $i..."
           if curl -fsS https://tesi-app-backend.onrender.com/api/v1/keep-alive/health; then
-            echo "Endpoint /health OK!"
+            echo "✅ Endpoint /health OK!"
             break
           else
-            echo "Fallito, nuovo tentativo tra 15 secondi..."
+            echo "⚠️ Fallito, nuovo tentativo tra 15 secondi..."
             sleep 15
           fi
         done
@@ -29,14 +29,14 @@ jobs:
 
     - name: Ping endpoint di backup con retry
       run: |
-        echo "Pinging /ping as backup"
-        for i in {1..3}; do
+        echo "🔁 Pinging /ping as backup"
+        for i in {1..5}; do
           echo "Tentativo $i..."
           if curl -fsS https://tesi-app-backend.onrender.com/api/v1/keep-alive/ping; then
-            echo "Endpoint /ping OK!"
+            echo "✅ Endpoint /ping OK!"
             break
           else
-            echo "Fallito, nuovo tentativo tra 10 secondi..."
+            echo "⚠️ Fallito, nuovo tentativo tra 10 secondi..."
             sleep 10
           fi
         done
