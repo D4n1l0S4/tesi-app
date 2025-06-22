@@ -1,4 +1,4 @@
-name: Keep App Alive
+name: Keep Alive App
 
 on:
   schedule:
