@@ -1,0 +1,24 @@
+name: Keep App Alive
+
+on:
+  schedule:
+    # Ogni 14 minuti (evita cold start di 15 min)
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Permette di eseguire manualmente
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Ping Spring Boot App
+      run: |
+        echo "Pinging app at $(date)"
+        curl -f https://tesi-app-frontend.onrender.com/health || exit 1
+        echo "App is alive!"
+        
+    - name: Ping Alternative Endpoint
+      run: |
+        echo "Pinging backup endpoint"
+        curl -f https://tesi-app-frontend.onrender.com/ping || exit 1
+        echo "Backup ping successful!"
