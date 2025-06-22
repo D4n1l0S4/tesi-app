@@ -3,7 +3,7 @@ name: Keep App Alive
 on:
   schedule:
     # Ogni 14 minuti (evita cold start di 15 min)
-    - cron: '*/14 * * * *'
+    - cron: '*/14 * * * *'  # Aggiunto il quinto campo mancante
   workflow_dispatch: # Permette di eseguire manualmente
 
 jobs:
@@ -22,3 +22,6 @@ jobs:
         echo "Pinging backup endpoint"
         curl -f https://tesi-app-backend.onrender.com/api/v1/keep-alive/ping || exit 1
         echo "Backup ping successful!"
+
+    - name: Wait between requests
+      run: sleep 5
