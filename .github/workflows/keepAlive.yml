@@ -2,7 +2,7 @@ name: Keep Alive App
 
 on:
   schedule:
-    # Ogni 12 minuti (evita cold start di 15 min)
+    # # Trigger keep-alive, si attiva ogni 12 minuti (evita cold start di 15 min)
     - cron: '*/12 * * * *'  # Ogni 12 minuti: 00, 12, 24, 36, 48
   workflow_dispatch: # Permette di eseguire manualmente
 
