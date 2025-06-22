@@ -2,26 +2,41 @@ name: Keep Alive App
 
 on:
   schedule:
-    # # Trigger keep-alive, si attiva ogni 12 minuti (evita cold start di 15 min)
-    - cron: '*/12 * * * *'  # Ogni 12 minuti: 00, 12, 24, 36, 48
-  workflow_dispatch: # Permette di eseguire manualmente
+    - cron: '*/12 * * * *'  # Ogni 12 minuti
+  workflow_dispatch:        # Avvio manuale
 
 jobs:
   ping:
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Ping Spring Boot App
-      run: |
-        echo "Pinging app at $(date)"
-        curl -f https://tesi-app-backend.onrender.com/api/v1/keep-alive/health || exit 1
-        echo "App is alive!"
-        
-    - name: Ping Alternative Endpoint
-      run: |
-        echo "Pinging backup endpoint"
-        curl -f https://tesi-app-backend.onrender.com/api/v1/keep-alive/ping || exit 1
-        echo "Backup ping successful!"
 
-    - name: Wait between requests
+    steps:
+    - name: Ping endpoint principale con retry
+      run: |
+        echo "Pinging /health at $(date)"
+        for i in {1..5}; do
+          echo "Tentativo $i..."
+          if curl -fsS https://tesi-app-backend.onrender.com/api/v1/keep-alive/health; then
+            echo "Endpoint /health OK!"
+            break
+          else
+            echo "Fallito, nuovo tentativo tra 15 secondi..."
+            sleep 15
+          fi
+        done
+
+    - name: Attesa tra ping
       run: sleep 5
+
+    - name: Ping endpoint di backup con retry
+      run: |
+        echo "Pinging /ping as backup"
+        for i in {1..3}; do
+          echo "Tentativo $i..."
+          if curl -fsS https://tesi-app-backend.onrender.com/api/v1/keep-alive/ping; then
+            echo "Endpoint /ping OK!"
+            break
+          else
+            echo "Fallito, nuovo tentativo tra 10 secondi..."
+            sleep 10
+          fi
+        done
