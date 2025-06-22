@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import it.uniba.crud.entity.Patient;
 import it.uniba.crud.service.PatientService;
 
-
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,40 @@ public class PatientController {
 	
 	@Autowired
 	private PatientService patientService;
-	
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    
+    
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> health() {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Query semplice per testare la connessione al database
+            Integer result = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
+            
+            response.put("status", "OK");
+            response.put("timestamp", LocalDateTime.now());
+            response.put("database", "connected");
+            response.put("dbTest", result);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("status", "ERROR");
+            response.put("timestamp", LocalDateTime.now());
+            response.put("database", "disconnected");
+            response.put("error", e.getMessage());
+            
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
+    
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("pong - " + LocalDateTime.now());
+    }
 	
 	
 	@GetMapping("/hello")
