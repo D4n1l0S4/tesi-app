@@ -14,11 +14,11 @@ jobs:
     - name: Ping Spring Boot App
       run: |
         echo "Pinging app at $(date)"
-        curl -f https://tesi-app-frontend.onrender.com/health || exit 1
+        curl -f https://tesi-app-backend.onrender.com/health || exit 1
         echo "App is alive!"
         
     - name: Ping Alternative Endpoint
       run: |
         echo "Pinging backup endpoint"
-        curl -f https://tesi-app-frontend.onrender.com/ping || exit 1
+        curl -f https://tesi-app-backend.onrender.com/ping || exit 1
         echo "Backup ping successful!"
