@@ -2,8 +2,8 @@ name: Keep App Alive
 
 on:
   schedule:
-    # Ogni 14 minuti (evita cold start di 15 min)
-    - cron: '*/14 * * * *'  # Aggiunto il quinto campo mancante
+    # Ogni 12 minuti (evita cold start di 15 min)
+    - cron: '*/12 * * * *'  # Ogni 12 minuti: 00, 12, 24, 36, 48
   workflow_dispatch: # Permette di eseguire manualmente
 
 jobs:

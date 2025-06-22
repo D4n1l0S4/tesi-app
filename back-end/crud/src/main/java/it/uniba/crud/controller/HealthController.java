@@ -26,6 +26,9 @@ public class HealthController {
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> response = new HashMap<>();
         
+        // ⭐ LOG ESPLICITO - Lo vedrai sulla console di Render
+        System.out.println("KEEP-ALIVE: Health check richiesto alle ore: " + LocalDateTime.now());
+        
         try {
             // Query semplice per testare la connessione al database
             Integer result = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
@@ -35,6 +38,9 @@ public class HealthController {
             response.put("database", "connected");
             response.put("dbTest", result);
             
+            // LOG ESPLICITO per successo
+            System.out.println("KEEP-ALIVE: Health check PASSED - Database OK");
+            
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
@@ -43,6 +49,9 @@ public class HealthController {
             response.put("database", "disconnected");
             response.put("error", e.getMessage());
             
+            // LOG ESPLICITO per indicare errore
+            System.out.println("KEEP-ALIVE: Health check FAILED - " + e.getMessage());
+            
             return ResponseEntity.status(500).body(response);
         }
     }
@@ -50,6 +59,8 @@ public class HealthController {
     
     @GetMapping("/ping")
     public ResponseEntity<String> ping() {
+        // LOG ESPLICITO
+        System.out.println("KEEP-ALIVE: Ping requested at: " + LocalDateTime.now());
         return ResponseEntity.ok("pong - " + LocalDateTime.now());
     }
 }
